@@ -7,12 +7,14 @@ import PageHeader from '@/components/PageHeader';
 import BrandFields from '@/components/BrandFields';
 import { parseStyle } from '@/lib/brandStyle';
 import InviteLink from '@/components/InviteLink';
+import { getSettings, publicApp } from '@/lib/settings';
 
 export const dynamic = 'force-dynamic';
 
 export default async function BrandsPage() {
   const user = await requireUser();
   const isAdmin = user.role === 'admin';
+  const app = publicApp(await getSettings());
   const brands = await db.all(`SELECT * FROM brands ${isAdmin ? '' : 'WHERE id=?'} ORDER BY name`, ...(isAdmin ? [] : [user.brand_id]));
   const users = isAdmin
     ? (await db.all("SELECT id,email,name,brand_id,google_sub IS NOT NULL AS google,password_hash<>'' AS has_password FROM users WHERE role='brand' ORDER BY email"))
@@ -30,7 +32,7 @@ export default async function BrandsPage() {
         <div className="panel">
           <h2>Tambah brand</h2>
           <ActionForm action={createBrand} submitLabel="Tambah brand">
-            <BrandFields />
+            <BrandFields app={app} />
           </ActionForm>
         </div>
       )}
@@ -40,7 +42,7 @@ export default async function BrandsPage() {
           <h2>{b.name}</h2>
           <ActionForm action={updateBrand}>
             <input type="hidden" name="id" value={b.id} />
-            <BrandFields brand={b} style={parseStyle(b.style)} />
+            <BrandFields app={app} brand={b} style={parseStyle(b.style)} />
           </ActionForm>
 
           <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid var(--line)' }}>

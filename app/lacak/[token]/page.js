@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { db } from '@/lib/db';
-import { COMPANY } from '@/lib/config';
+import { getSettings, publicApp } from '@/lib/settings';
 import { parseStyle } from '@/lib/brandStyle';
 import { respondent, statusLabel } from '@/lib/shipping';
 import { fmtUtc } from '@/lib/format';
@@ -24,7 +24,7 @@ async function getTracking(token) {
 export async function generateMetadata({ params }) {
   const { token } = await params;
   const t = await getTracking(token);
-  return { title: t ? `Lacak kiriman - ${t.brand_name} x ${COMPANY.name}` : 'Link lacak tidak ditemukan', robots: { index: false } };
+  return { title: t ? `Lacak kiriman - ${t.brand_name}` : 'Link lacak tidak ditemukan', robots: { index: false } };
 }
 
 export default async function TrackPage({ params }) {
@@ -38,7 +38,7 @@ export default async function TrackPage({ params }) {
     : [];
 
   return (
-    <PublicShell brand={{ name: t.brand_name, color: t.brand_color, logo: t.brand_logo }} style={parseStyle(t.brand_style)} cover={null}>
+    <PublicShell app={publicApp(await getSettings())} brand={{ name: t.brand_name, color: t.brand_color, logo: t.brand_logo }} style={parseStyle(t.brand_style)} cover={null}>
       <h1>Lacak kiriman</h1>
       <p>Halo {who.name.startsWith('Pengisi #') ? '' : who.name}, ini status barang dari {t.brand_name} untuk pendaftaran “{t.form_title}”.</p>
 

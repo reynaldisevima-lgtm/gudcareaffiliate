@@ -1,10 +1,9 @@
-import { COMPANY } from '@/lib/config';
 import { FONT_FAMILY } from '@/lib/fonts';
 import { textOn } from '@/lib/brandStyle';
 
 // Kerangka halaman pengisi: header Gudcare × brand, sampul, dan tema brand.
 // Dipakai halaman publik dan pratinjau di pengaturan brand, jadi keduanya selalu sama.
-export default function PublicShell({ brand, style, cover, preview = false, children }) {
+export default function PublicShell({ app, brand, style, cover, preview = false, children }) {
   const color = /^#[0-9a-fA-F]{6}$/.test(brand.color || '') ? brand.color : '#5d87ff';
   return (
     <div
@@ -13,7 +12,7 @@ export default function PublicShell({ brand, style, cover, preview = false, chil
     >
       <header className="pub-head">
         <div className="pub-head-inner">
-          <strong className="wordmark">{COMPANY.name}</strong>
+          {app.logo_url ? <img src={app.logo_url} alt={app.app_name} /> : <strong className="wordmark">{app.app_name}</strong>}
           <span className="pub-sep" aria-hidden="true">×</span>
           {brand.logo ? <img src={brand.logo} alt={brand.name} /> : <strong>{brand.name || 'Nama brand'}</strong>}
         </div>
@@ -22,7 +21,7 @@ export default function PublicShell({ brand, style, cover, preview = false, chil
         {cover && <img className="pub-cover" src={cover} alt="" />}
         {children}
       </div>
-      <footer className="pub-foot">{brand.name || 'Nama brand'} · {COMPANY.name}</footer>
+      <footer className="pub-foot">{brand.name || 'Nama brand'} · {app.app_name}</footer>
     </div>
   );
 }

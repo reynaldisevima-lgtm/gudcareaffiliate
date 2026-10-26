@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { db } from '@/lib/db';
-import { COMPANY } from '@/lib/config';
+import { getSettings, publicApp } from '@/lib/settings';
 import FormRunner from '@/components/FormRunner';
 import PublicShell from '@/components/PublicShell';
 import { parseStyle } from '@/lib/brandStyle';
@@ -16,7 +16,7 @@ function getForm(slug) {
 export async function generateMetadata({ params }) {
   const { slug } = await params;
   const f = await getForm(slug);
-  return { title: f ? `${f.title} - ${f.brand_name} x ${COMPANY.name}` : 'Form tidak ditemukan', robots: { index: false } };
+  return { title: f ? `${f.title} - ${f.brand_name}` : 'Form tidak ditemukan', robots: { index: false } };
 }
 
 export default async function PublicForm({ params }) {
@@ -26,7 +26,7 @@ export default async function PublicForm({ params }) {
   const style = parseStyle(form.brand_style);
 
   return (
-    <PublicShell brand={{ name: form.brand_name, color: form.brand_color, logo: form.brand_logo }} style={style} cover={form.brand_cover}>
+    <PublicShell app={publicApp(await getSettings())} brand={{ name: form.brand_name, color: form.brand_color, logo: form.brand_logo }} style={style} cover={form.brand_cover}>
       <h1>{form.title}</h1>
       {form.description && <p style={{ whiteSpace: 'pre-wrap' }}>{form.description}</p>}
       {form.is_active ? (

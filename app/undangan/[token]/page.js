@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { db } from '@/lib/db';
 import { getUser } from '@/lib/auth';
 import { googleEnabled } from '@/lib/google';
-import { COMPANY } from '@/lib/config';
+import { getSettings } from '@/lib/settings';
 import Logo from '@/components/Logo';
 import GoogleIcon from '@/components/GoogleIcon';
 
@@ -14,7 +14,7 @@ const getBrand = (token) =>
 
 export async function generateMetadata({ params }) {
   const brand = await getBrand((await params).token);
-  return { title: brand ? `Gabung ke ${brand.name} - ${COMPANY.name}` : 'Undangan tidak berlaku', robots: { index: false } };
+  return { title: brand ? `Gabung ke ${brand.name}` : 'Undangan tidak berlaku', robots: { index: false } };
 }
 
 // Halaman undangan untuk tim brand: login Google di sini langsung menjadikan pengguna anggota brand.
@@ -23,15 +23,16 @@ export default async function InvitePage({ params }) {
   const brand = await getBrand(token);
   if (!brand) notFound();
   const user = await getUser();
+  const app = await getSettings();
 
   return (
     <div className="auth">
       <div className="auth-card">
-        <Logo />
+        <Logo app={app} />
         {brand.logo && <img src={brand.logo} alt={brand.name} className="invite-logo" />}
         <h1 style={{ textAlign: 'center', marginTop: 8 }}>Gabung ke tim {brand.name}</h1>
         <p className="muted">
-          Kamu diundang mengelola form survey affiliate {brand.name} di {COMPANY.name}. Masuk dengan akun Google untuk bergabung.
+          Kamu diundang mengelola form survey affiliate {brand.name} di {app.app_name}. Masuk dengan akun Google untuk bergabung.
         </p>
         {user ? (
           <>

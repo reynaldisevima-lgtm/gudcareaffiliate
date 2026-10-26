@@ -38,16 +38,19 @@ export async function logout() {
 
 /* ---------- brands & users (admin) ---------- */
 
-async function readImage(file, { what, max, maxLabel, types = LOGO_TYPES }) {
+async function readImage(file, { what, max, maxLabel, types = LOGO_TYPES, typesLabel = 'PNG, JPG, WEBP, atau SVG' }) {
   if (!file || typeof file === 'string' || file.size === 0) return { ok: true, value: null };
-  if (!types.includes(file.type)) return { ok: false, error: `${what} harus ${types === LOGO_TYPES ? 'PNG, JPG, WEBP, atau SVG' : 'PNG, JPG, atau WEBP'}.` };
+  if (!types.includes(file.type)) return { ok: false, error: `${what} harus ${typesLabel}.` };
   if (file.size > max) return { ok: false, error: `Ukuran ${what.toLowerCase()} maksimal ${maxLabel}.` };
   const buf = Buffer.from(await file.arrayBuffer());
   return { ok: true, value: `data:${file.type};base64,${buf.toString('base64')}` };
 }
 
 const readLogo = (file) => readImage(file, { what: 'Logo', max: MAX_LOGO, maxLabel: '300 KB' });
-const readCover = (file) => readImage(file, { what: 'Gambar sampul', max: MAX_COVER, maxLabel: '1 MB', types: COVER_TYPES });
+const readCover = (file) => readImage(file, { what: 'Gambar sampul', max: MAX_COVER, maxLabel: '1 MB', types: COVER_TYPES, typesLabel: 'PNG, JPG, atau WEBP' });
+// Logo aplikasi juga dipakai untuk favicon & ikon PWA; pembuat ikon (next/og) tidak mendukung WEBP.
+const readAppLogo = (file) =>
+  readImage(file, { what: 'Logo', max: MAX_LOGO, maxLabel: '300 KB', types: ['image/png', 'image/jpeg', 'image/svg+xml'], typesLabel: 'PNG, JPG, atau SVG' });
 
 const styleFromForm = (fd) =>
   JSON.stringify(
@@ -99,6 +102,38 @@ export async function updateBrand(_prev, fd) {
   );
   revalidatePath('/dashboard/brands');
   return { ok: 'Tersimpan.' };
+}
+
+/* ---------- pengaturan aplikasi (admin) ---------- */
+
+export async function saveAppSettings(_prev, fd) {
+  await requireAdmin();
+  const appName = String(fd.get('app_name') || '').trim().slice(0, 40);
+  const tagline = String(fd.get('tagline') || '').trim().slice(0, 160);
+  const primary = String(fd.get('primary') || '');
+  const iconBg = String(fd.get('icon_bg') || '');
+  if (!appName) return { error: 'Nama aplikasi wajib diisi.' };
+  if (!HEX.test(primary) || !HEX.test(iconBg)) return { error: 'Warna tidak valid.' };
+  const logo = await readAppLogo(fd.get('logo'));
+  if (!logo.ok) return { error: logo.error };
+
+  const values = { app_name: appName, tagline, primary, icon_bg: iconBg, show_name: fd.get('show_name') === 'on' ? '1' : '0' };
+  if (logo.value) values.logo = logo.value;
+  await db.tx(async (t) => {
+    for (const [key, value] of Object.entries(values)) {
+      if (value) await t.run('INSERT INTO settings (key,value) VALUES (?,?) ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value', key, value);
+      else await t.run('DELETE FROM settings WHERE key=?', key);
+    }
+    if (fd.get('remove_logo') === 'on' && !logo.value) await t.run("DELETE FROM settings WHERE key='logo'");
+  });
+  revalidatePath('/', 'layout');
+  return { ok: 'Tersimpan.' };
+}
+
+export async function resetAppSettings() {
+  await requireAdmin();
+  await db.run('DELETE FROM settings');
+  revalidatePath('/', 'layout');
 }
 
 // Ganti link undangan brand; link lama langsung tidak berlaku.

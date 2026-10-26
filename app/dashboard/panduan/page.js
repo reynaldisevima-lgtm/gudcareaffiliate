@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { requireAdmin } from '@/lib/auth';
 import PageHeader from '@/components/PageHeader';
 
-export const metadata = { title: 'Panduan admin - Gudcare Survey' };
+export const metadata = { title: 'Panduan admin' };
 
 // Nama tombol/menu persis seperti di aplikasi, agar mudah dicari di layar.
 const B = ({ children }) => <span className="ui">{children}</span>;
@@ -16,6 +16,7 @@ const SECTIONS = [
   ['bagikan', 'Membagikan form ke affiliate'],
   ['hasil', 'Melihat hasil survey'],
   ['kirim', 'Mengelola pengiriman barang'],
+  ['aplikasi', 'Mengatur tampilan aplikasi'],
   ['faq', 'Tips & pertanyaan umum'],
 ];
 
@@ -168,7 +169,21 @@ export default async function GuidePage() {
         </ul>
       </Section>
 
-      <Section id="faq" title="9. Tips & pertanyaan umum">
+      <Section id="aplikasi" title="9. Mengatur tampilan aplikasi">
+        <p>Menu <B>Pengaturan aplikasi</B> (khusus admin) mengubah tampilan aplikasi untuk semua pengguna, termasuk tim brand dan halaman form affiliate.</p>
+        <ol>
+          <li>Ubah <B>Nama aplikasi</B>: tampil di sidebar, halaman login, judul tab browser, dan header form affiliate.</li>
+          <li>Ubah <B>Teks di halaman login</B> bila perlu.</li>
+          <li>Unggah <B>Logo</B> (PNG/JPG/SVG, maks. 300 KB). Logo ini juga menjadi ikon tab browser dan ikon aplikasi di HP. Centang/hilangkan <B>Tampilkan nama aplikasi di samping logo</B> sesuai bentuk logo; bila logo sudah berisi tulisan, hilangkan centangnya.</li>
+          <li>Atur <B>Warna latar ikon aplikasi</B>: warna di sekitar logo pada ikon Android/iPhone yang berbentuk persegi atau bulat penuh.</li>
+          <li>Pilih <B>Warna utama</B> untuk tombol, menu aktif, link, dan grafik. Warna teks di atasnya otomatis disesuaikan agar tetap terbaca.</li>
+          <li>Lihat hasilnya di <em>Pratinjau</em>, lalu klik <B>Simpan pengaturan</B>. Semua pengguna langsung melihat tampilan baru.</li>
+        </ol>
+        <p>Untuk kembali ke tampilan awal, klik <B>Kembalikan ke bawaan</B>.</p>
+        <p className="note">Tampilan form affiliate (font, latar, sampul) diatur per brand di <B>Brand &amp; akun</B>, bukan di sini. Di HP yang sudah memasang aplikasi, ikon baru kadang baru terlihat setelah aplikasi dibuka ulang atau dipasang ulang.</p>
+      </Section>
+
+      <Section id="faq" title="10. Tips & pertanyaan umum">
         <dl className="faq">
           <div>
             <dt>Tim brand bilang tidak bisa login.</dt>

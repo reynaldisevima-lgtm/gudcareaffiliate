@@ -23,7 +23,7 @@ function Choice({ name, options, value, onChange }) {
 }
 
 // Field identitas + tampilan form brand, dengan pratinjau halaman pengisi yang ikut berubah.
-export default function BrandFields({ brand, style: savedStyle }) {
+export default function BrandFields({ app, brand, style: savedStyle }) {
   const initial = { name: brand?.name || '', color: brand?.color || '#5d87ff', ...(savedStyle || DEFAULT_STYLE) };
   const [v, setV] = useState(initial);
   const [removeLogo, setRemoveLogo] = useState(false);
@@ -112,7 +112,7 @@ export default function BrandFields({ brand, style: savedStyle }) {
       <div className="brand-preview">
         <p className="muted" style={{ margin: '0 0 8px' }}>Pratinjau halaman pengisi</p>
         <div className="preview-frame" aria-hidden="true" inert>
-          <PublicShell preview brand={{ name: v.name, color: v.color, logo }} style={v} cover={cover}>
+          <PublicShell preview app={app} brand={{ name: v.name, color: v.color, logo }} style={v} cover={cover}>
             <h1>Survey affiliate</h1>
             <p>Contoh deskripsi form.</p>
             <div className="panel">
