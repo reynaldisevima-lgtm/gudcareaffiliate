@@ -6,6 +6,7 @@ import ConfirmButton from '@/components/ConfirmButton';
 import PageHeader from '@/components/PageHeader';
 import BrandFields from '@/components/BrandFields';
 import { parseStyle } from '@/lib/brandStyle';
+import InviteLink from '@/components/InviteLink';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,6 +17,7 @@ export default async function BrandsPage() {
   const users = isAdmin
     ? (await db.all("SELECT id,email,name,brand_id,google_sub IS NOT NULL AS google,password_hash<>'' AS has_password FROM users WHERE role='brand' ORDER BY email"))
     : [];
+  const members = isAdmin ? [] : await db.all("SELECT name, email FROM users WHERE role='brand' AND brand_id=? ORDER BY name", user.brand_id);
 
   return (
     <>
@@ -40,6 +42,23 @@ export default async function BrandsPage() {
             <input type="hidden" name="id" value={b.id} />
             <BrandFields brand={b} style={parseStyle(b.style)} />
           </ActionForm>
+
+          <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid var(--line)' }}>
+            <h2 style={{ fontSize: 15, marginBottom: 4 }}>Undang tim brand</h2>
+            <p className="muted">
+              Kirim link ini ke tim {b.name}. Siapa pun yang masuk dengan Google lewat link ini langsung menjadi anggota brand ini.
+            </p>
+            <InviteLink brandId={b.id} brandName={b.name} token={b.invite_token} />
+          </div>
+
+          {!isAdmin && (
+            <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid var(--line)' }}>
+              <h2 style={{ fontSize: 15 }}>Anggota tim</h2>
+              {members.map((m) => (
+                <div key={m.email} style={{ padding: '6px 0', borderBottom: '1px solid var(--line)' }}>{m.name} · {m.email}</div>
+              ))}
+            </div>
+          )}
 
           {isAdmin && (
             <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid var(--line)' }}>

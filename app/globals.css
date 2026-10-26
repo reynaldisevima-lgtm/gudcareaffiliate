@@ -383,3 +383,4 @@ td .mono { white-space: nowrap; }
 .google-btn:hover { background: #f6f8fb; border-color: #b9c3d3; }
 .divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; color: var(--muted); font-size: 13px; }
 .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+.invite-logo { display: block; height: 48px; max-width: 160px; object-fit: contain; margin: 12px auto 0; }

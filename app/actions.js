@@ -101,6 +101,15 @@ export async function updateBrand(_prev, fd) {
   return { ok: 'Tersimpan.' };
 }
 
+// Ganti link undangan brand; link lama langsung tidak berlaku.
+export async function rotateInvite(fd) {
+  const user = await requireUser();
+  const id = Number(fd.get('id'));
+  if (user.role !== 'admin' && user.brand_id !== id) return;
+  await db.run("UPDATE brands SET invite_token=replace(gen_random_uuid()::text, '-', '') WHERE id=?", id);
+  revalidatePath('/dashboard/brands');
+}
+
 export async function createBrandUser(_prev, fd) {
   await requireAdmin();
   const brandId = Number(fd.get('brand_id'));
