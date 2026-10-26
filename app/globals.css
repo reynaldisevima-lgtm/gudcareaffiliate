@@ -14,6 +14,7 @@
   --danger: #e0533a;
   --danger-light: #fdede8;
   --accent: var(--primary);
+  --gudcare-pink: #fd9aae; /* warna logo Gudcare */
   --radius: 7px;
   --radius-lg: 12px;
   --shadow: rgba(145, 158, 171, 0.3) 0 0 2px 0, rgba(145, 158, 171, 0.12) 0 12px 24px -4px;
@@ -90,7 +91,7 @@ p { margin: 0 0 12px; }
 .logo:hover { text-decoration: none; }
 .logo-mark {
   width: 34px; height: 34px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center;
-  background: var(--primary); color: #fff; font-size: 18px;
+  background: var(--gudcare-pink); color: #fff; font-size: 18px;
 }
 
 @media (max-width: 1199px) {

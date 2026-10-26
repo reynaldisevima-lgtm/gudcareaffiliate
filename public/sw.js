@@ -3,7 +3,7 @@
 //   jadi tidak pernah disimpan di cache. Saat offline tampil /offline.html.
 // - Aset statis ber-hash dari build (/_next/static) dan ikon disimpan cache-first agar app cepat dibuka.
 //   Di mode dev (?dev=1) aset /_next tidak di-cache supaya hot reload tidak tertahan file lama.
-const VERSION = 'v2';
+const VERSION = 'v3';
 const CACHE = `gudcare-${VERSION}`;
 const OFFLINE_URL = '/offline.html';
 const DEV = new URL(self.location.href).searchParams.has('dev');
