@@ -37,7 +37,7 @@ export default async function InvitePage({ params }) {
         {user ? (
           <>
             <p style={{ textAlign: 'center' }}>Kamu sudah masuk sebagai <strong>{user.email}</strong>.</p>
-            <Link className="btn primary google-btn" style={{ color: '#fff' }} href="/dashboard">Buka dashboard</Link>
+            <Link className="btn primary google-btn" style={{ color: '#fff' }} href="/dashboard/statistik">Buka dashboard</Link>
           </>
         ) : googleEnabled() ? (
           <a className="btn google-btn" href={`/api/auth/google?invite=${token}`}>

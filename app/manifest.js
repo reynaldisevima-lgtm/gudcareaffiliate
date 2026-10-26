@@ -10,7 +10,7 @@ export default async function manifest() {
     short_name: s.app_name,
     description: `Kelola form survey affiliate, hasil, dan pengiriman barang brand ${s.app_name}.`,
     lang: 'id',
-    start_url: '/dashboard',
+    start_url: '/dashboard/statistik',
     scope: '/',
     display: 'standalone',
     background_color: '#ffffff',
@@ -21,6 +21,7 @@ export default async function manifest() {
       { src: s.icons.maskable512, sizes: '512x512', type: 'image/png', purpose: 'maskable' },
     ],
     shortcuts: [
+      { name: 'Dashboard', url: '/dashboard/statistik', icons: [{ src: s.icons.any192, sizes: '192x192' }] },
       { name: 'Form', url: '/dashboard', icons: [{ src: s.icons.any192, sizes: '192x192' }] },
       { name: 'Pengiriman', url: '/dashboard/shipments', icons: [{ src: s.icons.any192, sizes: '192x192' }] },
     ],

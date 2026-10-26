@@ -13,6 +13,7 @@ const ICONS = {
   truck: <><path d="M5 17a2 2 0 1 0 4 0a2 2 0 1 0-4 0M15 17a2 2 0 1 0 4 0a2 2 0 1 0-4 0" /><path d="M5 17H3V6a1 1 0 0 1 1-1h9v12m-4 0h6m4 0h2v-6h-8m0-5h5l3 5" /></>,
   book: <><path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0" /><path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0" /><path d="M3 6v13M12 6v13M21 6v13" /></>,
   settings: <><path d="M10.3 4.3c.4-1.8 3-1.8 3.4 0a1.7 1.7 0 0 0 2.6 1.1c1.5-.9 3.3.8 2.4 2.4a1.7 1.7 0 0 0 1 2.5c1.8.5 1.8 3 0 3.5a1.7 1.7 0 0 0-1 2.5c.9 1.6-.9 3.3-2.4 2.4a1.7 1.7 0 0 0-2.6 1.1c-.4 1.8-3 1.8-3.4 0a1.7 1.7 0 0 0-2.6-1.1c-1.5.9-3.3-.8-2.4-2.4a1.7 1.7 0 0 0-1-2.5c-1.8-.5-1.8-3 0-3.5a1.7 1.7 0 0 0 1-2.5c-.9-1.6.9-3.3 2.4-2.4a1.7 1.7 0 0 0 2.6-1.1z" /><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0-6 0" /></>,
+  chart: <><path d="M3 3v18h18" /><path d="M7 15v2M11 11v6M15 7v10M19 13v4" /></>,
   menu: <path d="M4 6h16M4 12h16M4 18h16" />,
   close: <path d="M18 6 6 18M6 6l12 12" />,
   logout: <><path d="M14 8V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2v-2" /><path d="M9 12h12l-3-3M18 15l3-3" /></>,
@@ -46,6 +47,7 @@ export default function DashboardShell({ app, user, children }) {
   }, [menu]);
 
   const nav = [
+    { href: '/dashboard/statistik', label: 'Dashboard', icon: 'chart', active: pathname.startsWith('/dashboard/statistik') },
     { href: '/dashboard', label: 'Form', icon: 'forms', active: pathname === '/dashboard' || (pathname.startsWith('/dashboard/forms') && !pathname.endsWith('/shipments')) },
     { href: '/dashboard/shipments', label: 'Pengiriman', icon: 'truck', active: pathname.startsWith('/dashboard/shipments') || /^\/dashboard\/forms\/\d+\/shipments/.test(pathname) },
     { href: '/dashboard/brands', label: isAdmin ? 'Brand & akun' : 'Brand saya', icon: 'brand', active: pathname.startsWith('/dashboard/brands') },

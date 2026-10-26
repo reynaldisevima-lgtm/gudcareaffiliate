@@ -28,7 +28,7 @@ export async function login(_prev, fd) {
     return { error: 'Email atau password salah.' };
   }
   await createSession(user.id);
-  redirect('/dashboard');
+  redirect('/dashboard/statistik');
 }
 
 export async function logout() {

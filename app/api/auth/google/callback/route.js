@@ -50,5 +50,5 @@ export async function GET(req) {
   if (!user.google_sub) await db.run('UPDATE users SET google_sub=? WHERE id=?', claims.sub, user.id);
 
   await createSession(user.id);
-  return NextResponse.redirect(new URL('/dashboard', appOrigin(req)));
+  return NextResponse.redirect(new URL('/dashboard/statistik', appOrigin(req)));
 }

@@ -20,7 +20,7 @@ const errors = (APP) => ({
 });
 
 export default async function LoginPage({ searchParams }) {
-  if (await getUser()) redirect('/dashboard');
+  if (await getUser()) redirect('/dashboard/statistik');
   const { error } = await searchParams;
   const google = googleEnabled();
   const app = await getSettings();

@@ -137,6 +137,7 @@ export default async function GuidePage() {
 
       <Section id="hasil" title="7. Melihat hasil survey">
         <ul>
+          <li>Menu <B>Dashboard</B> (halaman pertama setelah login) merangkum semua form: jawaban masuk dibanding periode sebelumnya, jumlah affiliate unik, barang dikirim, konten tayang, grafik jawaban per hari, progres pengiriman, jawaban per brand dan per form, serta aktivitas terbaru. Pilih rentang waktu dan, untuk admin, filter brand di bagian atas.</li>
           <li>Halaman <B>Form</B> menampilkan total form, total jawaban, dan jawaban 7 hari terakhir dari semua brand.</li>
           <li>Tab <B>Ringkasan</B> pada sebuah form:
             <ul>

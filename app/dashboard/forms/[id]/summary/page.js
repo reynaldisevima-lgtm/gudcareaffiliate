@@ -8,22 +8,10 @@ import PageHeader from '@/components/PageHeader';
 import FormTabs from '@/components/FormTabs';
 import BarList from '@/components/BarList';
 import TrendChart from '@/components/TrendChart';
-import { fmtUtc as fmtTime } from '@/lib/format';
+import StatDelta from '@/components/StatDelta';
+import { fmtUtc as fmtTime, fmtNum as num } from '@/lib/format';
 
 export const dynamic = 'force-dynamic';
-
-const num = (n, digits = 0) => n.toLocaleString('id-ID', { maximumFractionDigits: digits, minimumFractionDigits: digits });
-
-function Delta({ total, prev, days }) {
-  if (prev === null) return null;
-  const diff = total - prev;
-  if (diff === 0) return <p className="stat-delta">Sama dengan {days} hari sebelumnya</p>;
-  return (
-    <p className={`stat-delta ${diff > 0 ? 'up' : 'down'}`}>
-      <span aria-hidden="true">{diff > 0 ? '▲' : '▼'}</span> {diff > 0 ? '+' : '−'}{num(Math.abs(diff))} dibanding {days} hari sebelumnya
-    </p>
-  );
-}
 
 export default async function SummaryPage({ params, searchParams }) {
   const { id } = await params;
@@ -58,7 +46,7 @@ export default async function SummaryPage({ params, searchParams }) {
         <div className="panel stat">
           <p className="stat-label">Jawaban masuk</p>
           <p className="stat-value">{num(s.total)}</p>
-          <Delta total={s.total} prev={s.prev} days={s.days} />
+          <StatDelta total={s.total} prev={s.prev} days={s.days} />
         </div>
         <div className="panel stat">
           <p className="stat-label">Rata-rata per hari</p>
