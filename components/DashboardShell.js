@@ -11,6 +11,7 @@ const ICONS = {
   forms: <><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z" /><path d="M9 9h1M9 13h6M9 17h6" /></>,
   brand: <><path d="M3 21h18" /><path d="M5 21V7l8-4v18" /><path d="M19 21V11l-6-4" /><path d="M9 9v.01M9 12v.01M9 15v.01M9 18v.01" /></>,
   truck: <><path d="M5 17a2 2 0 1 0 4 0a2 2 0 1 0-4 0M15 17a2 2 0 1 0 4 0a2 2 0 1 0-4 0" /><path d="M5 17H3V6a1 1 0 0 1 1-1h9v12m-4 0h6m4 0h2v-6h-8m0-5h5l3 5" /></>,
+  book: <><path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0" /><path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0" /><path d="M3 6v13M12 6v13M21 6v13" /></>,
   menu: <path d="M4 6h16M4 12h16M4 18h16" />,
   close: <path d="M18 6 6 18M6 6l12 12" />,
   logout: <><path d="M14 8V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2v-2" /><path d="M9 12h12l-3-3M18 15l3-3" /></>,
@@ -47,6 +48,7 @@ export default function DashboardShell({ user, children }) {
     { href: '/dashboard', label: 'Form', icon: 'forms', active: pathname === '/dashboard' || (pathname.startsWith('/dashboard/forms') && !pathname.endsWith('/shipments')) },
     { href: '/dashboard/shipments', label: 'Pengiriman', icon: 'truck', active: pathname.startsWith('/dashboard/shipments') || /^\/dashboard\/forms\/\d+\/shipments/.test(pathname) },
     { href: '/dashboard/brands', label: isAdmin ? 'Brand & akun' : 'Brand saya', icon: 'brand', active: pathname.startsWith('/dashboard/brands') },
+    ...(isAdmin ? [{ href: '/dashboard/panduan', label: 'Panduan admin', icon: 'book', active: pathname.startsWith('/dashboard/panduan') }] : []),
   ];
 
   return (

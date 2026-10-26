@@ -384,3 +384,20 @@ td .mono { white-space: nowrap; }
 .divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; color: var(--muted); font-size: 13px; }
 .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--line); }
 .invite-logo { display: block; height: 48px; max-width: 160px; object-fit: contain; margin: 12px auto 0; }
+
+/* ---------- panduan admin ---------- */
+.guide { scroll-margin-top: 86px; max-width: 900px; }
+.guide h3 { font-size: 15px; font-weight: 600; margin: 20px 0 8px; }
+.guide ol, .guide ul { margin: 0 0 12px; padding-left: 22px; }
+.guide li { margin: 6px 0; }
+.guide li > ul { margin: 6px 0 0; }
+.guide code { font-family: ui-monospace, Consolas, monospace; font-size: 13px; background: #f2f6fa; padding: 1px 5px; border-radius: 4px; }
+.guide .ui { font-weight: 600; color: var(--ink); background: var(--primary-light); padding: 1px 6px; border-radius: 4px; white-space: nowrap; }
+.guide .note { background: #fef5e5; border-left: 3px solid #f0a020; padding: 10px 14px; border-radius: 4px; margin: 12px 0 0; }
+.guide-toc { max-width: 900px; }
+.guide-toc ol { margin: 0; padding-left: 22px; columns: 2; column-gap: 32px; }
+.guide-toc li { margin: 4px 0; break-inside: avoid; }
+.roles, .faq { margin: 0; display: grid; gap: 14px; }
+.roles dt, .faq dt { font-weight: 600; }
+.roles dd, .faq dd { margin: 2px 0 0; color: var(--muted); }
+@media (max-width: 600px) { .guide-toc ol { columns: 1; } .guide .ui { white-space: normal; } }
