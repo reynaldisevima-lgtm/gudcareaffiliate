@@ -14,7 +14,7 @@ export default async function BrandsPage() {
   const isAdmin = user.role === 'admin';
   const brands = await db.all(`SELECT * FROM brands ${isAdmin ? '' : 'WHERE id=?'} ORDER BY name`, ...(isAdmin ? [] : [user.brand_id]));
   const users = isAdmin
-    ? (await db.all("SELECT id,email,name,brand_id FROM users WHERE role='brand' ORDER BY email"))
+    ? (await db.all("SELECT id,email,name,brand_id,google_sub IS NOT NULL AS google,password_hash<>'' AS has_password FROM users WHERE role='brand' ORDER BY email"))
     : [];
 
   return (
@@ -49,7 +49,11 @@ export default async function BrandsPage() {
               )}
               {users.filter((u) => u.brand_id === b.id).map((u) => (
                 <div className="row between" key={u.id} style={{ padding: '6px 0', borderBottom: '1px solid var(--line)' }}>
-                  <span>{u.name} · {u.email}</span>
+                  <span>
+                    {u.name} · {u.email}{' '}
+                    <span className="tag">{u.google ? 'Google terhubung' : 'Google belum dipakai'}</span>{' '}
+                    {!u.has_password && <span className="tag">Tanpa password</span>}
+                  </span>
                   <div className="row">
                     <ActionForm action={resetUserPassword} submitLabel="Ganti password" primary={false} className="row">
                       <input type="hidden" name="user_id" value={u.id} />
@@ -68,7 +72,7 @@ export default async function BrandsPage() {
                   <div className="row">
                     <div className="grow"><label>Nama</label><input type="text" name="name" required /></div>
                     <div className="grow"><label>Email</label><input type="email" name="email" required /></div>
-                    <div className="grow"><label>Password (min. 8)</label><input type="password" name="password" minLength={8} required /></div>
+                    <div className="grow"><label>Password (opsional, min. 8)</label><input type="password" name="password" minLength={8} placeholder="Kosongkan bila hanya login Google" /></div>
                   </div>
                 </ActionForm>
               </div>

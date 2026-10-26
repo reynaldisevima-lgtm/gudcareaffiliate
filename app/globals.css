@@ -377,3 +377,9 @@ td .mono { white-space: nowrap; }
 .pub a:not(.btn) { color: color-mix(in srgb, var(--brand) 75%, var(--pub-ink)); font-weight: 600; }
 .pub button:not(.primary), .pub .btn:not(.primary) { border-color: var(--brand); color: var(--pub-ink); border-radius: var(--pub-ctl); }
 .pub button:not(.primary):hover, .pub .btn:not(.primary):hover { background: color-mix(in srgb, var(--brand) 10%, transparent); }
+
+/* ---------- login Google ---------- */
+.google-btn { display: flex; width: 100%; justify-content: center; gap: 10px; padding: 9px 16px; border-color: var(--field); color: var(--ink); }
+.google-btn:hover { background: #f6f8fb; border-color: #b9c3d3; }
+.divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; color: var(--muted); font-size: 13px; }
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--line); }

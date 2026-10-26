@@ -23,7 +23,8 @@ export async function login(_prev, fd) {
   const email = String(fd.get('email') || '').trim().toLowerCase();
   const password = String(fd.get('password') || '');
   const user = await db.get('SELECT * FROM users WHERE email=?', email);
-  if (!user || !bcrypt.compareSync(password, user.password_hash)) {
+  // password_hash kosong = akun khusus login Google.
+  if (!user || !user.password_hash || !bcrypt.compareSync(password, user.password_hash)) {
     return { error: 'Email atau password salah.' };
   }
   await createSession(user.id);
@@ -109,13 +110,13 @@ export async function createBrandUser(_prev, fd) {
   if (!(await db.get('SELECT 1 FROM brands WHERE id=?', brandId))) return { error: 'Brand tidak ditemukan.' };
   if (!/^\S+@\S+\.\S+$/.test(email)) return { error: 'Format email tidak valid.' };
   if (!name) return { error: 'Nama wajib diisi.' };
-  if (password.length < 8) return { error: 'Password minimal 8 karakter.' };
+  if (password && password.length < 8) return { error: 'Password minimal 8 karakter, atau kosongkan untuk akun khusus login Google.' };
   if (await db.get('SELECT 1 FROM users WHERE email=?', email)) return { error: 'Email sudah terdaftar.' };
   await db.run(
     "INSERT INTO users (email,name,password_hash,role,brand_id) VALUES (?,?,?,'brand',?)",
     email,
     name,
-    bcrypt.hashSync(password, 10),
+    password ? bcrypt.hashSync(password, 10) : '',
     brandId
   );
   revalidatePath('/dashboard/brands');
