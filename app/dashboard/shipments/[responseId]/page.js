@@ -16,7 +16,7 @@ export const dynamic = 'force-dynamic';
 export default async function ShipmentDetailPage({ params }) {
   const { responseId } = await params;
   const user = await requireUser();
-  const response = await db.get('SELECT * FROM responses WHERE id=?', Number(responseId));
+  const response = await db.get('SELECT * FROM responses WHERE id=? AND deleted_at IS NULL', Number(responseId));
   const form = response && await getAccessibleForm(user, response.form_id);
   if (!form) notFound();
   const questions = JSON.parse(form.questions);

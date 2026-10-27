@@ -19,7 +19,7 @@ export async function GET(_req, { params }) {
   if (!form) return new Response('Not found', { status: 404 });
 
   const questions = JSON.parse(form.questions);
-  const rows = await db.all('SELECT answers, created_at FROM responses WHERE form_id=? ORDER BY id', form.id);
+  const rows = await db.all('SELECT answers, created_at FROM responses WHERE form_id=? AND deleted_at IS NULL ORDER BY id', form.id);
   const lines = [['Waktu (UTC)', ...questions.map((q) => q.label)].map(cell).join(',')];
   for (const r of rows) {
     const a = JSON.parse(r.answers);

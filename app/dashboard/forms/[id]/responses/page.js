@@ -18,7 +18,7 @@ export default async function ResponsesPage({ params }) {
   if (!form) notFound();
   const questions = JSON.parse(form.questions);
   const rows = (await db.all(`SELECT r.id, r.answers, r.created_at, COALESCE(s.status, 'pending') AS ship_status
-       FROM responses r LEFT JOIN shipments s ON s.response_id=r.id WHERE r.form_id=? ORDER BY r.id DESC`, form.id))
+       FROM responses r LEFT JOIN shipments s ON s.response_id=r.id WHERE r.form_id=? AND r.deleted_at IS NULL ORDER BY r.id DESC`, form.id))
     .map((r) => ({ ...r, answers: JSON.parse(r.answers) }));
 
   return (
@@ -61,7 +61,7 @@ export default async function ResponsesPage({ params }) {
                   <td>
                     <form action={deleteResponse}>
                       <input type="hidden" name="id" value={r.id} />
-                      <ConfirmButton className="small danger" message="Hapus jawaban ini?">Hapus</ConfirmButton>
+                      <ConfirmButton className="small danger" message="Hapus jawaban ini? Admin masih bisa memulihkannya dari Log aktivitas.">Hapus</ConfirmButton>
                     </form>
                   </td>
                 </tr>

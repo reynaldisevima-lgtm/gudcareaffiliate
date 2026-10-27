@@ -11,12 +11,12 @@ export default async function FormsPage() {
   const isAdmin = user.role === 'admin';
   const brands = isAdmin ? (await db.all('SELECT id, name FROM brands ORDER BY name')) : [];
   const forms = await db.all(`SELECT f.id, f.slug, f.title, f.is_active, f.updated_at, b.name AS brand_name,
-              (SELECT COUNT(*)::int FROM responses r WHERE r.form_id=f.id) AS response_count
+              (SELECT COUNT(*)::int FROM responses r WHERE r.form_id=f.id AND r.deleted_at IS NULL) AS response_count
        FROM forms f JOIN brands b ON b.id=f.brand_id
-       ${isAdmin ? '' : 'WHERE f.brand_id=?'}
+       WHERE f.deleted_at IS NULL ${isAdmin ? '' : 'AND f.brand_id=?'}
        ORDER BY f.updated_at DESC`, ...(isAdmin ? [] : [user.brand_id]));
   const recent = (await db.get(`SELECT COUNT(*)::int AS n FROM responses r JOIN forms f ON f.id=r.form_id
-       WHERE r.created_at >= to_char((now() AT TIME ZONE 'utc') - interval '7 days', 'YYYY-MM-DD HH24:MI:SS') ${isAdmin ? '' : 'AND f.brand_id=?'}`, ...(isAdmin ? [] : [user.brand_id]))).n;
+       WHERE r.deleted_at IS NULL AND f.deleted_at IS NULL AND r.created_at >= to_char((now() AT TIME ZONE 'utc') - interval '7 days', 'YYYY-MM-DD HH24:MI:SS') ${isAdmin ? '' : 'AND f.brand_id=?'}`, ...(isAdmin ? [] : [user.brand_id]))).n;
   const totalResponses = forms.reduce((a, f) => a + f.response_count, 0);
   const kpis = [
     { label: 'Total form', value: forms.length, note: `${forms.filter((f) => f.is_active).length} sedang aktif` },

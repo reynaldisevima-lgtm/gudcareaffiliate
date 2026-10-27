@@ -18,7 +18,7 @@ async function getTracking(token) {
               s.id AS shipment_id, s.status, s.items, s.courier, s.tracking_no, s.updated_at
        FROM responses r JOIN forms f ON f.id=r.form_id JOIN brands b ON b.id=f.brand_id
        LEFT JOIN shipments s ON s.response_id=r.id
-       WHERE r.track_token=?`, token);
+       WHERE r.track_token=? AND r.deleted_at IS NULL AND f.deleted_at IS NULL`, token);
 }
 
 export async function generateMetadata({ params }) {

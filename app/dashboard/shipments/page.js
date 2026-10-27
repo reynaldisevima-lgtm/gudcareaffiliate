@@ -12,7 +12,7 @@ export default async function ShipmentsPage({ searchParams }) {
   const sp = await searchParams;
   const isAdmin = user.role === 'admin';
   const forms = await db.all(`SELECT f.id, f.title, b.name AS brand_name FROM forms f JOIN brands b ON b.id=f.brand_id
-       ${isAdmin ? '' : 'WHERE f.brand_id=?'} ORDER BY f.updated_at DESC`, ...(isAdmin ? [] : [user.brand_id]));
+       WHERE f.deleted_at IS NULL ${isAdmin ? '' : 'AND f.brand_id=?'} ORDER BY f.updated_at DESC`, ...(isAdmin ? [] : [user.brand_id]));
   const formId = forms.some((f) => String(f.id) === sp.form) ? sp.form : '';
   const status = isStatus(sp.status) ? sp.status : '';
   const rows = await listShipments(user, { formId });

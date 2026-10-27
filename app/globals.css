@@ -428,3 +428,24 @@ td .mono { white-space: nowrap; }
 .tab-mock span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .app-icon-mock { width: 64px; height: 64px; border-radius: 16px; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow); }
 .app-icon-mock img { object-fit: contain; }
+
+/* ---------- log aktivitas ---------- */
+.tag.k-hapus { background: var(--danger-light); color: #c2412a; }
+.tag.k-buat { background: var(--success-light); color: var(--success); }
+.tag.k-ubah { background: var(--primary-light); color: var(--primary-text); }
+.tag.k-pulih { background: #f0ebff; color: #6a4cd6; }
+.tag.k-masuk { background: #eef1f6; color: var(--muted); }
+.log-table td { vertical-align: top; }
+.log-details { margin-top: 6px; }
+.log-details summary { cursor: pointer; color: var(--primary-text); font-weight: 600; font-size: 13px; }
+.log-changes { margin: 6px 0 0; padding-left: 18px; font-size: 13px; }
+.log-changes li { margin: 3px 0; overflow-wrap: anywhere; }
+.log-changes del { color: #c2412a; }
+.log-changes ins { color: var(--success); text-decoration: none; }
+
+/* ---------- daftar & detail brand ---------- */
+.brand-cell { display: inline-flex; align-items: center; gap: 12px; font-weight: 600; }
+.brand-thumb { width: 36px; height: 36px; border-radius: 8px; object-fit: contain; flex: none; background: #f2f6fa; }
+.brand-initial { display: inline-flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; text-shadow: 0 0 2px rgba(0, 0, 0, .35); }
+.member-list .member { padding: 10px 0; border-bottom: 1px solid var(--line); }
+.member-list .member:last-child { border-bottom: 0; }

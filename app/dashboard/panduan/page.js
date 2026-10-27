@@ -17,6 +17,7 @@ const SECTIONS = [
   ['hasil', 'Melihat hasil survey'],
   ['kirim', 'Mengelola pengiriman barang'],
   ['aplikasi', 'Mengatur tampilan aplikasi'],
+  ['log', 'Log aktivitas & memulihkan data'],
   ['faq', 'Tips & pertanyaan umum'],
 ];
 
@@ -70,7 +71,7 @@ export default async function GuidePage() {
 
       <Section id="brand" title="3. Menambah brand & mengatur tampilan form">
         <ol>
-          <li>Buka menu <B>Brand &amp; akun</B>. Di bagian <B>Tambah brand</B>, isi nama brand dan pilih warna brand.</li>
+          <li>Buka menu <B>Brand &amp; akun</B>. Semua brand tampil sebagai daftar berisi jumlah form, jawaban, dan akun. Klik <B>Tambah brand</B> di kanan atas, lalu isi nama brand dan pilih warna brand.</li>
           <li>Unggah logo (PNG/JPG/WEBP/SVG, maks. 300 KB). Logo tampil di header form sebagai <em>Gudcare × Brand</em>.</li>
           <li>Atur <strong>Tampilan form</strong>. Perubahan langsung terlihat di <em>Pratinjau halaman pengisi</em> di sebelah kanan:
             <ul>
@@ -80,7 +81,7 @@ export default async function GuidePage() {
               <li><B>Gambar sampul</B> (opsional, maks. 1 MB) tampil sebagai banner di atas form.</li>
             </ul>
           </li>
-          <li>Klik <B>Tambah brand</B>. Untuk brand yang sudah ada, ubah isiannya di panel brand tersebut lalu klik <B>Simpan</B>.</li>
+          <li>Klik <B>Tambah brand</B>; kamu langsung dibawa ke halaman detail brand tersebut. Untuk brand yang sudah ada, klik <B>Detail</B> di daftar brand, ubah isiannya, lalu klik <B>Simpan</B>.</li>
         </ol>
         <p className="note">Tampilan berlaku untuk <strong>semua form</strong> milik brand itu, termasuk halaman lacak kiriman.</p>
       </Section>
@@ -88,7 +89,7 @@ export default async function GuidePage() {
       <Section id="tim" title="4. Mengundang tim brand">
         <p>Cara yang disarankan adalah <strong>link undangan</strong>: tim brand cukup login dengan Google, tanpa kamu mengetik email mereka.</p>
         <ol>
-          <li>Di <B>Brand &amp; akun</B>, cari panel brand lalu bagian <B>Undang tim brand</B>.</li>
+          <li>Di <B>Brand &amp; akun</B>, klik <B>Detail</B> pada brand yang dimaksud, lalu lihat bagian <B>Undang tim brand</B>.</li>
           <li>Klik <B>Salin link</B> atau <B>Kirim via WhatsApp</B>, lalu kirim ke tim brand.</li>
           <li>Tim brand membuka link → <B>Masuk dengan Google untuk bergabung</B>. Akun mereka langsung dibuat dan masuk ke brand tersebut.</li>
           <li>Anggota yang sudah bergabung muncul di daftar <B>Akun login brand</B> dengan label <em>Google terhubung</em>.</li>
@@ -184,7 +185,18 @@ export default async function GuidePage() {
         <p className="note">Tampilan form affiliate (font, latar, sampul) diatur per brand di <B>Brand &amp; akun</B>, bukan di sini. Di HP yang sudah memasang aplikasi, ikon baru kadang baru terlihat setelah aplikasi dibuka ulang atau dipasang ulang.</p>
       </Section>
 
-      <Section id="faq" title="10. Tips & pertanyaan umum">
+      <Section id="log" title="10. Log aktivitas & memulihkan data">
+        <p>Menu <B>Log aktivitas</B> (khusus admin) mencatat siapa melakukan apa dan kapan: login (termasuk yang gagal), membuat/mengubah/menyalin/menghapus form, menghapus jawaban, perubahan brand, akun, link undangan, pengiriman, dan pengaturan aplikasi.</p>
+        <ul>
+          <li>Saring dengan jenis aktivitas (<B>Hapus</B>, <B>Buat</B>, <B>Ubah</B>, <B>Pulihkan</B>, <B>Login</B>), brand, atau kata kunci (nama form, email, nama pengguna).</li>
+          <li>Klik <B>Lihat perubahan</B> untuk melihat isi yang berubah, mis. judul lama → baru atau pertanyaan yang dihapus.</li>
+          <li><strong>Form atau jawaban terhapus tidak hilang permanen.</strong> Cari baris <em>Form dihapus</em> / <em>Jawaban dihapus</em>, lalu klik <B>Pulihkan</B>. Jawaban, file, dan riwayat pengirimannya ikut kembali.</li>
+          <li>Kalau pertanyaan form terhapus atau berubah tidak sengaja, cari baris <em>Form diubah</em> lalu klik <B>Kembalikan</B> untuk mengembalikan isi form ke sebelum perubahan itu. Jawaban yang sudah masuk tidak terpengaruh.</li>
+          <li>Akun yang dihapus tidak bisa dipulihkan dari log; undang ulang orangnya lewat link undangan brand.</li>
+        </ul>
+      </Section>
+
+      <Section id="faq" title="11. Tips & pertanyaan umum">
         <dl className="faq">
           <div>
             <dt>Tim brand bilang tidak bisa login.</dt>
@@ -193,6 +205,10 @@ export default async function GuidePage() {
           <div>
             <dt>Link undangan tersebar ke orang yang salah.</dt>
             <dd>Klik <B>Buat link baru</B> di brand tersebut, lalu hapus akun yang tidak seharusnya di <B>Akun login brand</B>.</dd>
+          </div>
+          <div>
+            <dt>Ada yang tidak sengaja menghapus form atau jawaban.</dt>
+            <dd>Buka <B>Log aktivitas</B>, pilih jenis <B>Hapus</B>, temukan barisnya, lalu klik <B>Pulihkan</B>. Log juga menunjukkan siapa yang menghapus dan kapan.</dd>
           </div>
           <div>
             <dt>Affiliate gagal mengirim form dengan file.</dt>

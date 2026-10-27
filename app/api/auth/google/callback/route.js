@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { db } from '@/lib/db';
 import { createSession, cookieSecure } from '@/lib/auth';
 import { appOrigin, verifyCallback } from '@/lib/google';
+import { audit } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,24 +32,33 @@ export async function GET(req) {
   if (!claims.email || claims.email_verified !== true) return fail('google_failed');
   const email = String(claims.email).toLowerCase();
 
-  let user = await db.get('SELECT id, google_sub FROM users WHERE email=?', email);
+  let user = await db.get('SELECT id, email, name, role, brand_id, google_sub FROM users WHERE email=?', email);
+  let joined = null;
   if (!user && saved.invite) {
-    const brand = await db.get('SELECT id FROM brands WHERE invite_token=?', saved.invite);
+    const brand = await db.get('SELECT id, name FROM brands WHERE invite_token=?', saved.invite);
     if (!brand) return fail('invite_invalid');
     const name = String(claims.name || email.split('@')[0]).trim().slice(0, 80);
     user = await db.get(
-      "INSERT INTO users (email,name,password_hash,role,brand_id,google_sub) VALUES (?,?,'','brand',?,?) ON CONFLICT (email) DO NOTHING RETURNING id, google_sub",
+      "INSERT INTO users (email,name,password_hash,role,brand_id,google_sub) VALUES (?,?,'','brand',?,?) ON CONFLICT (email) DO NOTHING RETURNING id, email, name, role, brand_id, google_sub",
       email, name, brand.id, claims.sub
-    ) ?? (await db.get('SELECT id, google_sub FROM users WHERE email=?', email));
+    ) ?? (await db.get('SELECT id, email, name, role, brand_id, google_sub FROM users WHERE email=?', email));
+    joined = brand;
   }
   if (!user) {
     // Tampilkan email yang dicoba agar mudah tahu akun Google mana yang salah pilih.
     jar.set('login_email', email, { httpOnly: true, sameSite: 'lax', secure: cookieSecure(), path: '/login', maxAge: 120 });
+    await audit(null, { action: 'login.failed', summary: `Login Google ditolak: ${email} belum terdaftar` });
     return fail('not_registered');
   }
-  if (user.google_sub && user.google_sub !== claims.sub) return fail('google_mismatch');
+  if (user.google_sub && user.google_sub !== claims.sub) {
+    await audit(null, { action: 'login.failed', summary: `Login Google ditolak: ${email} terhubung ke akun Google lain` });
+    return fail('google_mismatch');
+  }
   if (!user.google_sub) await db.run('UPDATE users SET google_sub=? WHERE id=?', claims.sub, user.id);
 
   await createSession(user.id);
+  await audit(user, joined
+    ? { action: 'join.invite', summary: `${email} bergabung ke brand ${joined.name} lewat link undangan`, brandId: joined.id }
+    : { action: 'login.google', summary: `${email} masuk dengan Google`, brandId: user.brand_id });
   return NextResponse.redirect(new URL('/dashboard/statistik', appOrigin(req)));
 }

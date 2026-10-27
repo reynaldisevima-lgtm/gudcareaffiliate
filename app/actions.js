@@ -9,7 +9,9 @@ import { db, newTrackToken } from '@/lib/db';
 import { createSession, requireUser, requireAdmin, getAccessibleForm } from '@/lib/auth';
 import { defaultQuestions, sanitizeQuestions, HAS_OPTIONS, MAX_FILE } from '@/lib/questions';
 import { sanitizeStyle } from '@/lib/brandStyle';
-import { isStatus } from '@/lib/shipping';
+import { isStatus, statusLabel, respondent } from '@/lib/shipping';
+import { audit, diffForm, changeNames } from '@/lib/audit';
+import { DEFAULT_SETTINGS } from '@/lib/settings';
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
 const MAX_LOGO = 300 * 1024;
@@ -25,9 +27,11 @@ export async function login(_prev, fd) {
   const user = await db.get('SELECT * FROM users WHERE email=?', email);
   // password_hash kosong = akun khusus login Google.
   if (!user || !user.password_hash || !bcrypt.compareSync(password, user.password_hash)) {
+    await audit(null, { action: 'login.failed', summary: `Login password gagal untuk ${email || '(email kosong)'}` });
     return { error: 'Email atau password salah.' };
   }
   await createSession(user.id);
+  await audit(user, { action: 'login', summary: `${user.email} masuk dengan email & password`, brandId: user.brand_id });
   redirect('/dashboard/statistik');
 }
 
@@ -63,7 +67,7 @@ const styleFromForm = (fd) =>
   );
 
 export async function createBrand(_prev, fd) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const name = String(fd.get('name') || '').trim().slice(0, 80);
   const color = HEX.test(String(fd.get('color'))) ? String(fd.get('color')) : '#0f766e';
   if (!name) return { error: 'Nama brand wajib diisi.' };
@@ -71,9 +75,10 @@ export async function createBrand(_prev, fd) {
   if (!logo.ok) return { error: logo.error };
   const cover = await readCover(fd.get('cover'));
   if (!cover.ok) return { error: cover.error };
-  await db.run('INSERT INTO brands (name,color,logo,cover,style) VALUES (?,?,?,?,?)', name, color, logo.value, cover.value, styleFromForm(fd));
-  revalidatePath('/dashboard/brands');
-  return { ok: `Brand ${name} ditambahkan.` };
+  const b = await db.get('INSERT INTO brands (name,color,logo,cover,style) VALUES (?,?,?,?,?) RETURNING id', name, color, logo.value, cover.value, styleFromForm(fd));
+  await audit(admin, { action: 'brand.create', summary: `Menambah brand ${name}`, brandId: b.id, target: { type: 'brand', id: b.id } });
+  revalidatePath('/dashboard/brands', 'layout');
+  redirect(`/dashboard/brands/${b.id}`);
 }
 
 export async function updateBrand(_prev, fd) {
@@ -100,14 +105,31 @@ export async function updateBrand(_prev, fd) {
     styleFromForm(fd),
     id
   );
-  revalidatePath('/dashboard/brands');
+  const changed = [
+    name !== brand.name && 'nama',
+    color !== brand.color && 'warna',
+    (logo.value || removeLogo) && 'logo',
+    (cover.value || removeCover) && 'sampul',
+    styleFromForm(fd) !== JSON.stringify(sanitizeStyle(JSON.parse(brand.style || '{}'))) && 'tampilan form',
+  ].filter(Boolean);
+  if (changed.length) {
+    await audit(user, {
+      action: 'brand.update',
+      summary: `Mengubah brand ${name}: ${changed.join(', ')}`,
+      brandId: id,
+      target: { type: 'brand', id },
+      details: { changes: name !== brand.name ? [{ field: 'Nama brand', from: brand.name, to: name }] : [] },
+    });
+  }
+  revalidatePath('/dashboard/brands', 'layout');
   return { ok: 'Tersimpan.' };
 }
 
 /* ---------- pengaturan aplikasi (admin) ---------- */
 
 export async function saveAppSettings(_prev, fd) {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  const before = Object.fromEntries((await db.all('SELECT key, value FROM settings')).map((r) => [r.key, r.value]));
   const appName = String(fd.get('app_name') || '').trim().slice(0, 40);
   const tagline = String(fd.get('tagline') || '').trim().slice(0, 160);
   const primary = String(fd.get('primary') || '');
@@ -126,13 +148,18 @@ export async function saveAppSettings(_prev, fd) {
     }
     if (fd.get('remove_logo') === 'on' && !logo.value) await t.run("DELETE FROM settings WHERE key='logo'");
   });
+  const LABELS = { app_name: 'nama aplikasi', tagline: 'teks login', primary: 'warna utama', icon_bg: 'latar ikon', show_name: 'tampilkan nama' };
+  const changed = Object.keys(LABELS).filter((k) => (before[k] ?? DEFAULT_SETTINGS[k] ?? '') !== (values[k] || DEFAULT_SETTINGS[k] || ''));
+  if (logo.value || (fd.get('remove_logo') === 'on' && before.logo)) changed.push('logo');
+  if (changed.length) await audit(admin, { action: 'settings.update', summary: `Mengubah pengaturan aplikasi: ${changed.map((k) => LABELS[k] || k).join(', ')}` });
   revalidatePath('/', 'layout');
   return { ok: 'Tersimpan.' };
 }
 
 export async function resetAppSettings() {
-  await requireAdmin();
+  const admin = await requireAdmin();
   await db.run('DELETE FROM settings');
+  await audit(admin, { action: 'settings.reset', summary: 'Mengembalikan nama, logo, dan warna aplikasi ke bawaan' });
   revalidatePath('/', 'layout');
 }
 
@@ -141,17 +168,19 @@ export async function rotateInvite(fd) {
   const user = await requireUser();
   const id = Number(fd.get('id'));
   if (user.role !== 'admin' && user.brand_id !== id) return;
-  await db.run("UPDATE brands SET invite_token=replace(gen_random_uuid()::text, '-', '') WHERE id=?", id);
-  revalidatePath('/dashboard/brands');
+  const b = await db.get("UPDATE brands SET invite_token=replace(gen_random_uuid()::text, '-', '') WHERE id=? RETURNING name", id);
+  if (b) await audit(user, { action: 'brand.invite_rotate', summary: `Mengganti link undangan brand ${b.name} (link lama tidak berlaku)`, brandId: id, target: { type: 'brand', id } });
+  revalidatePath('/dashboard/brands', 'layout');
 }
 
 export async function createBrandUser(_prev, fd) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const brandId = Number(fd.get('brand_id'));
   const email = String(fd.get('email') || '').trim().toLowerCase();
   const name = String(fd.get('name') || '').trim().slice(0, 80);
   const password = String(fd.get('password') || '');
-  if (!(await db.get('SELECT 1 FROM brands WHERE id=?', brandId))) return { error: 'Brand tidak ditemukan.' };
+  const brand = await db.get('SELECT name FROM brands WHERE id=?', brandId);
+  if (!brand) return { error: 'Brand tidak ditemukan.' };
   if (!/^\S+@\S+\.\S+$/.test(email)) return { error: 'Format email tidak valid.' };
   if (!name) return { error: 'Nama wajib diisi.' };
   if (password && password.length < 8) return { error: 'Password minimal 8 karakter, atau kosongkan untuk akun khusus login Google.' };
@@ -163,23 +192,37 @@ export async function createBrandUser(_prev, fd) {
     password ? bcrypt.hashSync(password, 10) : '',
     brandId
   );
-  revalidatePath('/dashboard/brands');
+  await audit(admin, { action: 'user.create', summary: `Membuat akun ${email} (${name}) untuk brand ${brand.name}${password ? '' : ', khusus login Google'}`, brandId });
+  revalidatePath('/dashboard/brands', 'layout');
   return { ok: `Akun ${email} dibuat.` };
 }
 
 export async function resetUserPassword(_prev, fd) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const id = Number(fd.get('user_id'));
   const password = String(fd.get('password') || '');
   if (password.length < 8) return { error: 'Password minimal 8 karakter.' };
-  const r = await db.run("UPDATE users SET password_hash=? WHERE id=? AND role='brand'", bcrypt.hashSync(password, 10), id);
-  return r.changes ? { ok: 'Password diganti.' } : { error: 'User tidak ditemukan.' };
+  const u = await db.get("UPDATE users SET password_hash=? WHERE id=? AND role='brand' RETURNING email, brand_id", bcrypt.hashSync(password, 10), id);
+  if (!u) return { error: 'User tidak ditemukan.' };
+  await audit(admin, { action: 'user.password', summary: `Mengganti password akun ${u.email}`, brandId: u.brand_id });
+  return { ok: 'Password diganti.' };
 }
 
 export async function deleteBrandUser(fd) {
-  await requireAdmin();
-  await db.run("DELETE FROM users WHERE id=? AND role='brand'", Number(fd.get('user_id')));
-  revalidatePath('/dashboard/brands');
+  const admin = await requireAdmin();
+  const u = await db.get(
+    "DELETE FROM users WHERE id=? AND role='brand' RETURNING email, name, brand_id, (SELECT name FROM brands WHERE id=users.brand_id) AS brand_name",
+    Number(fd.get('user_id'))
+  );
+  if (u) {
+    await audit(admin, {
+      action: 'user.delete',
+      summary: `Menghapus akun ${u.email} (${u.name}) dari brand ${u.brand_name}`,
+      brandId: u.brand_id,
+      details: { changes: [{ field: 'Akun', from: `${u.name} · ${u.email}`, to: 'dihapus (undang ulang lewat link undangan bila perlu)' }] },
+    });
+  }
+  revalidatePath('/dashboard/brands', 'layout');
 }
 
 /* ---------- forms ---------- */
@@ -187,12 +230,14 @@ export async function deleteBrandUser(fd) {
 export async function createForm(fd) {
   const user = await requireUser();
   const brandId = user.role === 'admin' ? Number(fd.get('brand_id')) : user.brand_id;
-  if (!brandId || !(await db.get('SELECT 1 FROM brands WHERE id=?', brandId))) redirect('/dashboard');
+  const brand = brandId && (await db.get('SELECT name FROM brands WHERE id=?', brandId));
+  if (!brand) redirect('/dashboard');
   const slug = crypto.randomBytes(5).toString('hex');
   const r = await db.get(
     'INSERT INTO forms (brand_id,slug,title,description,questions) VALUES (?,?,?,?,?) RETURNING id',
     brandId, slug, 'Survey affiliate tanpa judul', '', JSON.stringify(defaultQuestions())
   );
+  await audit(user, { action: 'form.create', summary: `Membuat form baru untuk brand ${brand.name}`, brandId, target: { type: 'form', id: r.id } });
   redirect(`/dashboard/forms/${r.id}`);
 }
 
@@ -202,15 +247,23 @@ export async function saveForm(id, payload) {
   if (!form) return { error: 'Form tidak ditemukan.' };
   const title = String(payload?.title || '').trim().slice(0, 200);
   if (!title) return { error: 'Judul form wajib diisi.' };
+  const next = {
+    title,
+    description: String(payload?.description || '').slice(0, 2000),
+    thank_you: String(payload?.thank_you || '').slice(0, 1000) || 'Terima kasih, jawaban kamu sudah kami terima.',
+    is_active: payload?.is_active ? 1 : 0,
+    questions: JSON.stringify(sanitizeQuestions(payload?.questions)),
+  };
   await db.run(
     'UPDATE forms SET title=?, description=?, thank_you=?, is_active=?, questions=?, updated_at=utc_now() WHERE id=?',
-    title,
-    String(payload?.description || '').slice(0, 2000),
-    String(payload?.thank_you || '').slice(0, 1000) || 'Terima kasih, jawaban kamu sudah kami terima.',
-    payload?.is_active ? 1 : 0,
-    JSON.stringify(sanitizeQuestions(payload?.questions)),
-    form.id
+    next.title, next.description, next.thank_you, next.is_active, next.questions, form.id
   );
+  const changes = diffForm(form, next);
+  if (changes.length) {
+    // before disimpan agar admin bisa mengembalikan isi form dari Log aktivitas.
+    const before = { title: form.title, description: form.description, thank_you: form.thank_you, is_active: form.is_active, questions: form.questions };
+    await audit(user, { action: 'form.update', summary: `Mengubah form "${next.title}": ${changeNames(changes)}`, brandId: form.brand_id, target: { type: 'form', id: form.id }, details: { changes, before } });
+  }
   revalidatePath('/dashboard');
   return { ok: true };
 }
@@ -222,29 +275,77 @@ export async function duplicateForm(fd) {
   const form = await getAccessibleForm(user, fd.get('id'));
   if (!form) redirect('/dashboard');
   const brandId = user.role === 'admin' && fd.get('brand_id') ? Number(fd.get('brand_id')) : form.brand_id;
-  if (!(await db.get('SELECT 1 FROM brands WHERE id=?', brandId))) redirect('/dashboard');
+  const brand = await db.get('SELECT name FROM brands WHERE id=?', brandId);
+  if (!brand) redirect('/dashboard');
   const slug = crypto.randomBytes(5).toString('hex');
   const r = await db.get(
     'INSERT INTO forms (brand_id,slug,title,description,thank_you,questions,is_active) VALUES (?,?,?,?,?,?,?) RETURNING id',
     brandId, slug, `${form.title} (salinan)`.slice(0, 200), form.description, form.thank_you, form.questions, form.is_active
   );
+  await audit(user, { action: 'form.duplicate', summary: `Menyalin form "${form.title}" ke brand ${brand.name}`, brandId, target: { type: 'form', id: r.id } });
   redirect(`/dashboard/forms/${r.id}`);
 }
 
+// Hapus = pindah ke sampah: data tetap ada dan admin bisa memulihkannya dari Log aktivitas.
 export async function deleteForm(fd) {
   const user = await requireUser();
   const form = await getAccessibleForm(user, fd.get('id'));
-  if (form) await db.run('DELETE FROM forms WHERE id=?', form.id);
+  if (form) {
+    await db.run('UPDATE forms SET deleted_at=utc_now() WHERE id=?', form.id);
+    const { n } = await db.get('SELECT COUNT(*)::int AS n FROM responses WHERE form_id=? AND deleted_at IS NULL', form.id);
+    await audit(user, { action: 'form.delete', summary: `Menghapus form "${form.title}" beserta ${n} jawaban`, brandId: form.brand_id, target: { type: 'form', id: form.id } });
+  }
   redirect('/dashboard');
 }
 
 export async function deleteResponse(fd) {
   const user = await requireUser();
-  const row = await db.get('SELECT id, form_id FROM responses WHERE id=?', Number(fd.get('id')));
-  if (row && (await getAccessibleForm(user, row.form_id))) {
-    await db.run('DELETE FROM responses WHERE id=?', row.id);
+  const row = await db.get('SELECT id, form_id, answers FROM responses WHERE id=? AND deleted_at IS NULL', Number(fd.get('id')));
+  const form = row && (await getAccessibleForm(user, row.form_id));
+  if (form) {
+    await db.run('UPDATE responses SET deleted_at=utc_now() WHERE id=?', row.id);
+    const who = respondent(JSON.parse(form.questions), JSON.parse(row.answers), row.id).name;
+    await audit(user, { action: 'response.delete', summary: `Menghapus jawaban ${who} di form "${form.title}"`, brandId: form.brand_id, target: { type: 'response', id: row.id } });
     revalidatePath(`/dashboard/forms/${row.form_id}/responses`);
   }
+}
+
+/* ---------- pemulihan (admin, dari Log aktivitas) ---------- */
+
+export async function restoreForm(fd) {
+  const admin = await requireAdmin();
+  const form = await db.get('UPDATE forms SET deleted_at=NULL WHERE id=? AND deleted_at IS NOT NULL RETURNING id, title, brand_id', Number(fd.get('id')));
+  if (form) await audit(admin, { action: 'form.restore', summary: `Memulihkan form "${form.title}" beserta jawabannya`, brandId: form.brand_id, target: { type: 'form', id: form.id } });
+  revalidatePath('/dashboard', 'layout');
+}
+
+export async function restoreResponse(fd) {
+  const admin = await requireAdmin();
+  const row = await db.get(
+    'UPDATE responses r SET deleted_at=NULL FROM forms f WHERE r.id=? AND r.deleted_at IS NOT NULL AND f.id=r.form_id RETURNING r.id, r.answers, f.title, f.questions, f.brand_id',
+    Number(fd.get('id'))
+  );
+  if (row) {
+    const who = respondent(JSON.parse(row.questions), JSON.parse(row.answers), row.id).name;
+    await audit(admin, { action: 'response.restore', summary: `Memulihkan jawaban ${who} di form "${row.title}"`, brandId: row.brand_id, target: { type: 'response', id: row.id } });
+  }
+  revalidatePath('/dashboard', 'layout');
+}
+
+// Kembalikan isi form (judul, deskripsi, pesan, status, pertanyaan) ke keadaan sebelum satu perubahan.
+export async function revertForm(fd) {
+  const admin = await requireAdmin();
+  const log = await db.get("SELECT target_id, details FROM audit_logs WHERE id=? AND action='form.update'", Number(fd.get('log_id')));
+  const before = log && JSON.parse(log.details || '{}').before;
+  const form = before && (await getAccessibleForm(admin, log.target_id));
+  if (!form) return;
+  await db.run(
+    'UPDATE forms SET title=?, description=?, thank_you=?, is_active=?, questions=?, updated_at=utc_now() WHERE id=?',
+    before.title, before.description, before.thank_you, before.is_active, before.questions, form.id
+  );
+  const changes = diffForm(form, before);
+  await audit(admin, { action: 'form.revert', summary: `Mengembalikan isi form "${before.title}" ke sebelum perubahan`, brandId: form.brand_id, target: { type: 'form', id: form.id }, details: { changes, before: { title: form.title, description: form.description, thank_you: form.thank_you, is_active: form.is_active, questions: form.questions } } });
+  revalidatePath('/dashboard', 'layout');
 }
 
 /* ---------- pengiriman barang ---------- */
@@ -253,8 +354,9 @@ export async function deleteResponse(fd) {
 export async function updateShipment(_prev, fd) {
   const user = await requireUser();
   const responseId = Number(fd.get('response_id'));
-  const row = await db.get('SELECT id, form_id FROM responses WHERE id=?', responseId);
-  if (!row || !(await getAccessibleForm(user, row.form_id))) return { error: 'Data pengisi tidak ditemukan.' };
+  const row = await db.get('SELECT id, form_id, answers FROM responses WHERE id=? AND deleted_at IS NULL', responseId);
+  const form = row && (await getAccessibleForm(user, row.form_id));
+  if (!form) return { error: 'Data pengisi tidak ditemukan.' };
   const status = String(fd.get('status') || '');
   if (!isStatus(status)) return { error: 'Status tidak valid.' };
   const items = String(fd.get('items') || '').trim().slice(0, 500);
@@ -294,6 +396,13 @@ export async function updateShipment(_prev, fd) {
       user.name || user.email
     );
   });
+  const who = respondent(JSON.parse(form.questions), JSON.parse(row.answers), row.id).name;
+  await audit(user, {
+    action: 'shipment.update',
+    summary: `Pengiriman ${who} (${form.title}): ${prev && prev.status !== status ? `${statusLabel(prev.status)} → ` : ''}${statusLabel(status)}${trackingNo ? `, resi ${trackingNo}` : ''}`,
+    brandId: form.brand_id,
+    target: { type: 'response', id: row.id },
+  });
   revalidatePath('/dashboard', 'layout');
   return { ok: 'Tersimpan.' };
 }
@@ -302,7 +411,7 @@ export async function updateShipment(_prev, fd) {
 
 export async function submitResponse(_prev, fd) {
   const slug = String(fd.get('slug') || '');
-  const form = await db.get('SELECT * FROM forms WHERE slug=?', slug);
+  const form = await db.get('SELECT * FROM forms WHERE slug=? AND deleted_at IS NULL', slug);
   if (!form || !form.is_active) return { error: 'Form ini sedang tidak menerima jawaban.' };
   if (fd.get('website')) return { done: true }; // honeypot
 

@@ -22,7 +22,7 @@ export default async function SummaryPage({ params, searchParams }) {
   if (!form) notFound();
   const brand = await db.get('SELECT name FROM brands WHERE id=?', form.brand_id);
   const questions = JSON.parse(form.questions);
-  const rows = (await db.all('SELECT answers, created_at FROM responses WHERE form_id=?', form.id))
+  const rows = (await db.all('SELECT answers, created_at FROM responses WHERE form_id=? AND deleted_at IS NULL', form.id))
     .map((r) => ({ ...r, answers: JSON.parse(r.answers) }));
   const s = buildSummary(questions, rows, range);
   const typeLabel = (t) => TYPES.find((x) => x.value === t)?.label || t;

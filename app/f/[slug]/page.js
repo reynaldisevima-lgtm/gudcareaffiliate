@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 function getForm(slug) {
   return db.get(`SELECT f.*, b.name AS brand_name, b.color AS brand_color, b.logo AS brand_logo,
               b.cover AS brand_cover, b.style AS brand_style
-       FROM forms f JOIN brands b ON b.id=f.brand_id WHERE f.slug=?`, slug);
+       FROM forms f JOIN brands b ON b.id=f.brand_id WHERE f.slug=? AND f.deleted_at IS NULL`, slug);
 }
 
 export async function generateMetadata({ params }) {

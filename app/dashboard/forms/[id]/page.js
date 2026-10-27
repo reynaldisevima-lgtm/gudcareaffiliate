@@ -31,7 +31,7 @@ export default async function FormEditPage({ params }) {
           </form>
           <form action={deleteForm}>
             <input type="hidden" name="id" value={form.id} />
-            <ConfirmButton className="danger" message="Hapus form ini beserta semua jawabannya? Tindakan ini tidak bisa dibatalkan.">Hapus form</ConfirmButton>
+            <ConfirmButton className="danger" message="Hapus form ini beserta semua jawabannya? Form akan hilang dari daftar dan link-nya tidak bisa dibuka. Admin masih bisa memulihkannya dari Log aktivitas.">Hapus form</ConfirmButton>
           </form>
       </PageHeader>
       <FormTabs formId={form.id} active="edit" />

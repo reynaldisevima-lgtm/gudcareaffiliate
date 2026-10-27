@@ -9,7 +9,7 @@ export async function GET(_req, { params }) {
   const { id } = await params;
   const user = await getUser();
   if (!user) return new Response('Unauthorized', { status: 401 });
-  const f = await db.get('SELECT f.name, f.mime, f.data, r.form_id FROM files f JOIN responses r ON r.id=f.response_id WHERE f.id=?', Number(id));
+  const f = await db.get('SELECT f.name, f.mime, f.data, r.form_id FROM files f JOIN responses r ON r.id=f.response_id WHERE f.id=? AND r.deleted_at IS NULL', Number(id));
   if (!f || !await getAccessibleForm(user, f.form_id)) return new Response('Not found', { status: 404 });
   const inline = INLINE.includes(f.mime);
   return new Response(f.data, {
