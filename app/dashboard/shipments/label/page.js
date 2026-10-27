@@ -4,6 +4,7 @@ import { loadLabels } from '@/lib/labels';
 import { audit } from '@/lib/audit';
 import { formatAddress } from '@/lib/address';
 import PrintButton from '@/components/PrintButton';
+import { Barcode } from '@/lib/barcode';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Cetak label pengiriman' };
@@ -73,14 +74,17 @@ export default async function LabelPage({ searchParams }) {
           {labels.map((l) => (
             <article className="ship-label" key={l.ref}>
               <header className="sl-head">
-                <span className="sl-tag">{l.kind === 'kol' ? 'KOL' : 'Affiliate'}</span>
-                {l.courier && <strong>{l.courier}</strong>}
+                {l.sender.logo ? <img src={l.sender.logo} alt={l.sender.name} className="sl-logo" /> : <strong className="sl-brand">{l.sender.name}</strong>}
+                {l.courier && <strong className="sl-courier">{l.courier}</strong>}
               </header>
-              <section className="sl-block">
-                <div className="sl-cap">Pengirim</div>
-                <div className="sl-name">{l.sender.name}</div>
-                <div>{l.sender.phone || '-'}</div>
-              </section>
+              {l.trackingNo ? (
+                <section className="sl-block sl-code">
+                  <Barcode value={l.trackingNo} className="sl-barcode" />
+                  <div className="sl-resi">{l.trackingNo}</div>
+                </section>
+              ) : (
+                <section className="sl-block sl-code sl-empty">Tempel resi kurir di sini</section>
+              )}
               <section className="sl-block sl-to">
                 <div className="sl-cap">Penerima</div>
                 <div className="sl-name big">{l.recipient.name}</div>
@@ -88,16 +92,13 @@ export default async function LabelPage({ searchParams }) {
                 <div className="sl-addr">{l.recipient.address ? formatAddress(l.recipient.address) : ' '}</div>
               </section>
               <section className="sl-block">
+                <div className="sl-cap">Pengirim</div>
+                <div><span className="sl-name">{l.sender.name}</span>{l.sender.phone && <> · {l.sender.phone}</>}</div>
+              </section>
+              <section className="sl-block sl-last">
                 <div className="sl-cap">Isi paket</div>
                 <div className="sl-items">{l.items || '-'}</div>
               </section>
-              {l.trackingNo && (
-                <section className="sl-block">
-                  <div className="sl-cap">No. resi</div>
-                  <div className="sl-resi">{l.trackingNo}</div>
-                </section>
-              )}
-              <footer className="sl-foot">{l.context} · {l.ref}</footer>
             </article>
           ))}
         </div>

@@ -482,18 +482,23 @@ td .mono { white-space: nowrap; }
 .ship-label { box-sizing: border-box; display: flex; flex-direction: column; background: #fff; color: #000; border: 1.5px solid #000; font-size: 12px; line-height: 1.35; break-inside: avoid; page-break-inside: avoid; overflow: hidden; }
 .size-thermal .ship-label { width: 100mm; height: 150mm; }
 .size-a4 .ship-label { width: calc(50% - 8px); height: 135mm; }
-.sl-head { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; border-bottom: 1.5px solid #000; font-size: 14px; }
-.sl-tag { padding: 1px 8px; border: 1.5px solid #000; border-radius: 4px; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+.sl-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 40px; padding: 6px 10px; border-bottom: 1.5px solid #000; }
+.sl-logo { max-height: 30px; max-width: 55%; object-fit: contain; }
+.sl-brand { font-size: 15px; }
+.sl-courier { font-size: 18px; text-transform: uppercase; }
+.sl-block.sl-code { text-align: center; border-bottom: 1.5px solid #000; }
+.sl-barcode { display: block; width: 100%; height: 15mm; }
+.sl-block.sl-empty { display: flex; align-items: center; justify-content: center; height: 22mm; color: #555; font-size: 11px; border: 1px dashed #000; margin: 6px 10px; padding: 0; }
+.sl-block.sl-last { border-bottom: 0; }
 .sl-block { padding: 7px 10px; border-bottom: 1px dashed #000; }
 .sl-to { flex: 1; }
 .sl-cap { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 2px; }
 .sl-name { font-weight: 700; }
-.sl-name.big { font-size: 18px; line-height: 1.2; }
+.sl-name.big { font-size: 20px; line-height: 1.2; }
 .sl-phone { font-size: 14px; font-weight: 600; margin: 2px 0 4px; }
-.sl-addr { font-size: 13px; white-space: pre-wrap; }
+.sl-addr { font-size: 14px; font-weight: 500; white-space: pre-wrap; }
 .sl-items { font-size: 13px; font-weight: 600; }
-.sl-resi { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 16px; font-weight: 700; letter-spacing: .04em; }
-.sl-foot { margin-top: auto; padding: 5px 10px; font-size: 10px; }
+.sl-resi { margin-top: 3px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 16px; font-weight: 700; letter-spacing: .06em; }
 @media print {
   .label-sheet { display: block; }
   .size-thermal .ship-label { border: 0; page-break-after: always; break-after: page; }
