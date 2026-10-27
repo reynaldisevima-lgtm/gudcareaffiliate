@@ -1,6 +1,7 @@
 'use client';
 import { useActionState, useState } from 'react';
 import { submitResponse } from '@/app/actions';
+import { PROVINCES } from '@/lib/address';
 
 function TrackLinkNotice({ token }) {
   const path = `/lacak/${token}`;
@@ -89,6 +90,29 @@ export default function FormRunner({ slug, questions, thankYou, submitLabel = 'K
                 <input id={id} name={name} type="file" required={q.required} />
                 <p className="muted" style={{ marginTop: 4 }}>Maksimal 3 MB.</p>
               </>
+            )}
+            {q.type === 'address' && (
+              <div className="address-fields" role="group" aria-labelledby={id}>
+                <div>
+                  <label className="sub-label" htmlFor={`${id}_province`}>Provinsi</label>
+                  <select id={`${id}_province`} name={`${name}_province`} required={q.required} defaultValue="" autoComplete="address-level1">
+                    <option value="" disabled>Pilih provinsi</option>
+                    {PROVINCES.map((p) => <option key={p} value={p}>{p}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="sub-label" htmlFor={`${id}_city`}>Kota/Kabupaten</label>
+                  <input id={`${id}_city`} name={`${name}_city`} type="text" maxLength={100} required={q.required} placeholder="mis. Kota Bandung / Kabupaten Sleman" autoComplete="address-level2" />
+                </div>
+                <div className="span-2">
+                  <label className="sub-label" htmlFor={`${id}_street`}>Alamat lengkap</label>
+                  <textarea id={`${id}_street`} name={`${name}_street`} maxLength={500} required={q.required} placeholder="Nama jalan, nomor rumah, RT/RW, kelurahan, kecamatan, patokan" autoComplete="street-address" style={{ minHeight: 72 }} />
+                </div>
+                <div>
+                  <label className="sub-label" htmlFor={`${id}_postal`}>Kode pos</label>
+                  <input id={`${id}_postal`} name={`${name}_postal`} type="text" inputMode="numeric" pattern="[0-9]{5}" maxLength={5} required={q.required} placeholder="5 angka" title="Kode pos 5 angka" autoComplete="postal-code" />
+                </div>
+              </div>
             )}
           </div>
         );

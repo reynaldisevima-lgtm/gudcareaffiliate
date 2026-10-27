@@ -109,7 +109,8 @@ export default async function GuidePage() {
           <li>Isi <B>Judul form</B>, <B>Deskripsi</B> (tampil di atas form), dan <B>Pesan setelah form dikirim</B>.</li>
           <li>Atur pertanyaan:
             <ul>
-              <li>Tulis pertanyaan lalu pilih <B>Tipe</B>: Jawaban singkat, Paragraf, Pilihan ganda, Checkbox, Dropdown, Rating 1-5, atau Upload file/gambar (maks. 3 MB).</li>
+              <li>Tulis pertanyaan lalu pilih <B>Tipe</B>: Jawaban singkat, Paragraf, Pilihan ganda, Checkbox, Dropdown, Rating 1-5, Upload file/gambar (maks. 3 MB), atau <B>Alamat pengiriman</B>.</li>
+              <li><B>Alamat pengiriman</B> berisi isian terpisah: provinsi (pilihan 38 provinsi), kota/kabupaten, alamat lengkap, dan kode pos (5 angka). Bila pertanyaannya wajib, keempatnya wajib diisi. Form baru otomatis sudah berisi pertanyaan ini.</li>
               <li>Untuk pilihan ganda, checkbox, dan dropdown, tulis <B>Opsi</B> satu per baris.</li>
               <li>Centang <B>Wajib diisi</B> bila perlu. Gunakan <B>Naik</B>/<B>Turun</B> untuk mengubah urutan, <B>Hapus</B> untuk membuang pertanyaan, dan <B>Tambah pertanyaan</B> untuk menambah.</li>
             </ul>
@@ -148,7 +149,7 @@ export default async function GuidePage() {
               <li>Rekap per pertanyaan: jumlah dan persentase tiap pilihan, rata-rata rating, dan 5 jawaban teks terbaru.</li>
             </ul>
           </li>
-          <li>Tab <B>Semua jawaban</B>: tabel semua jawaban, link file yang diunggah, dan kolom status pengiriman. Klik <B>Export CSV</B> untuk dibuka di Excel/Google Sheets. <B>Hapus</B> menghapus satu jawaban.</li>
+          <li>Tab <B>Semua jawaban</B>: tabel semua jawaban, link file yang diunggah, dan kolom status pengiriman. Klik <B>Unduh Excel</B> (tabel data semua jawaban, alamat per kolom, status & resi pengiriman) atau <B>Unduh PDF</B> (laporan rinci: angka utama, rekap per pertanyaan, sebaran provinsi, dan daftar penerima). Dari tab Ringkasan, laporan mengikuti rentang waktu yang sedang dipilih. <B>Hapus</B> menghapus satu jawaban.</li>
         </ul>
         <p className="note">Waktu di aplikasi memakai UTC, yaitu 7 jam lebih awal dari WIB (mis. 09.00 UTC = 16.00 WIB).</p>
       </Section>

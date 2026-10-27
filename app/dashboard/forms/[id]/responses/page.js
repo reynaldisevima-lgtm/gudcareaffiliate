@@ -6,6 +6,7 @@ import { answerText } from '@/lib/format';
 import ConfirmButton from '@/components/ConfirmButton';
 import PageHeader from '@/components/PageHeader';
 import FormTabs from '@/components/FormTabs';
+import ReportButtons from '@/components/ReportButtons';
 import { StatusTag } from '@/components/ShipmentsBoard';
 import Link from 'next/link';
 
@@ -24,7 +25,7 @@ export default async function ResponsesPage({ params }) {
   return (
     <>
       <PageHeader title={form.title} subtitle={`${rows.length} jawaban`}>
-          <a className="btn primary" href={`/api/export/${form.id}`}>Export CSV</a>
+          <ReportButtons formId={form.id} />
       </PageHeader>
       <FormTabs formId={form.id} active="responses" />
 

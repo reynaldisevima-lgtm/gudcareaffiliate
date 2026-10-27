@@ -6,6 +6,7 @@ import { TYPES, HAS_OPTIONS } from '@/lib/questions';
 import { RANGES, buildSummary } from '@/lib/stats';
 import PageHeader from '@/components/PageHeader';
 import FormTabs from '@/components/FormTabs';
+import ReportButtons from '@/components/ReportButtons';
 import BarList from '@/components/BarList';
 import TrendChart from '@/components/TrendChart';
 import StatDelta from '@/components/StatDelta';
@@ -30,7 +31,7 @@ export default async function SummaryPage({ params, searchParams }) {
   return (
     <>
       <PageHeader title={form.title} subtitle={brand.name}>
-        <a className="btn primary" href={`/api/export/${form.id}`}>Export CSV</a>
+        <ReportButtons formId={form.id} range={range} />
       </PageHeader>
       <FormTabs formId={form.id} active="summary" />
 
@@ -94,6 +95,7 @@ export default async function SummaryPage({ params, searchParams }) {
               </p>
 
               {HAS_OPTIONS.includes(q.type) && <BarList rows={q.options} total={q.answered} />}
+              {q.provinces && q.provinces.length > 0 && <BarList rows={q.provinces.slice(0, 8)} total={q.answered} />}
 
               {q.type === 'rating' && (
                 <>

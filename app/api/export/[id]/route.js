@@ -1,35 +1,49 @@
 import { getUser, getAccessibleForm } from '@/lib/auth';
-import { db } from '@/lib/db';
-import { answerText } from '@/lib/format';
+import { RANGES } from '@/lib/stats';
+import { reportData, reportFileName } from '@/lib/report';
+import { reportXlsx } from '@/lib/report-xlsx';
+import { reportPdf } from '@/lib/report-pdf';
+import { getSettings } from '@/lib/settings';
+import { primaryVars } from '@/lib/color';
+import { audit } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
 
-// Cegah formula injection saat CSV dibuka di Excel/Sheets.
-function cell(v) {
-  let s = String(v ?? '');
-  if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
-  return `"${s.replace(/"/g, '""')}"`;
-}
-
-export async function GET(_req, { params }) {
+// Unduh laporan form: ?format=xlsx (tabel data, bawaan) | pdf (laporan rinci), &range=7|30|90|all.
+export async function GET(req, { params }) {
   const { id } = await params;
   const user = await getUser();
   if (!user) return new Response('Unauthorized', { status: 401 });
   const form = await getAccessibleForm(user, id);
   if (!form) return new Response('Not found', { status: 404 });
 
-  const questions = JSON.parse(form.questions);
-  const rows = await db.all('SELECT answers, created_at FROM responses WHERE form_id=? AND deleted_at IS NULL ORDER BY id', form.id);
-  const lines = [['Waktu (UTC)', ...questions.map((q) => q.label)].map(cell).join(',')];
-  for (const r of rows) {
-    const a = JSON.parse(r.answers);
-    lines.push([r.created_at, ...questions.map((q) => answerText(a[q.id]))].map(cell).join(','));
+  const sp = new URL(req.url).searchParams;
+  const format = sp.get('format') === 'pdf' ? 'pdf' : 'xlsx';
+  const range = RANGES.some((r) => r.value === sp.get('range')) ? sp.get('range') : 'all';
+  const settings = await getSettings();
+  const d = await reportData(form, range);
+
+  let body;
+  let type;
+  if (format === 'pdf') {
+    const v = primaryVars(settings.primary);
+    body = await reportPdf(d, { appName: settings.app_name, colors: { chart: v['--primary-chart'], track: v['--primary-light'] } });
+    type = 'application/pdf';
+  } else {
+    body = await reportXlsx(d, { appName: settings.app_name, origin: new URL(req.url).origin });
+    type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
   }
-  const safeName = form.title.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase() || 'survey';
-  return new Response('﻿' + lines.join('\r\n'), {
+  await audit(user, {
+    action: 'report.export',
+    summary: `Mengunduh laporan ${format === 'pdf' ? 'PDF' : 'Excel'} form "${form.title}" (${d.rangeLabel}, ${d.rows.length} jawaban)`,
+    brandId: form.brand_id,
+    target: { type: 'form', id: form.id },
+  });
+  return new Response(body, {
     headers: {
-      'Content-Type': 'text/csv; charset=utf-8',
-      'Content-Disposition': `attachment; filename="${safeName}.csv"`,
+      'Content-Type': type,
+      'Content-Disposition': `attachment; filename="${reportFileName(form, format)}"`,
+      'Cache-Control': 'no-store',
     },
   });
 }

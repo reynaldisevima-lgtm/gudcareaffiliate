@@ -12,6 +12,7 @@ import { sanitizeStyle } from '@/lib/brandStyle';
 import { isStatus, statusLabel, respondent } from '@/lib/shipping';
 import { audit, diffForm, changeNames } from '@/lib/audit';
 import { DEFAULT_SETTINGS } from '@/lib/settings';
+import { readAddress } from '@/lib/address';
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
 const MAX_LOGO = 300 * 1024;
@@ -427,6 +428,10 @@ export async function submitResponse(_prev, fd) {
     if (q.type === 'checkbox') {
       const picked = fd.getAll(key).map(String).filter((v) => q.options.includes(v));
       value = picked.length ? picked : null;
+    } else if (q.type === 'address') {
+      const a = readAddress(fd, key, q.label);
+      if (a.error) return { error: a.error };
+      value = a.value;
     } else if (q.type === 'file') {
       const f = fd.get(key);
       if (f && typeof f !== 'string' && f.size > 0) {
