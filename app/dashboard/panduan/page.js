@@ -78,7 +78,7 @@ export default async function GuidePage() {
               <li><B>Nuansa cepat</B>: satu klik mengatur font, latar, dan sudut sekaligus (<B>Segar</B>, <B>Ceria</B>, <B>Elegan</B>, <B>Malam</B>).</li>
               <li><B>Font</B>, <B>Latar</B>, dan <B>Sudut kartu &amp; tombol</B> bisa diatur satu per satu.</li>
               <li><B>Teks tombol kirim</B>, mis. “Daftar sekarang” sebagai ganti “Kirim”.</li>
-              <li><B>Gambar sampul</B> (opsional, maks. 1 MB) tampil sebagai banner di atas form.</li>
+              <li><B>Gambar sampul</B> (opsional, maks. 1 MB) tampil sebagai banner di atas form. Agar tidak terpotong, pakai ukuran <strong>1600 × 500 px</strong> (rasio 16:5) dan taruh teks atau logo penting di tengah. Gambar dengan rasio lain dipotong rata tengah; saat memilih file, aplikasi memberi tahu bila ukurannya kurang pas.</li>
             </ul>
           </li>
           <li>Klik <B>Tambah brand</B>; kamu langsung dibawa ke halaman detail brand tersebut. Untuk brand yang sudah ada, klik <B>Detail</B> di daftar brand, ubah isiannya, lalu klik <B>Simpan</B>.</li>

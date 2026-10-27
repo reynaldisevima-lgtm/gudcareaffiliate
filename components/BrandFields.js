@@ -30,7 +30,30 @@ export default function BrandFields({ app, brand, style: savedStyle }) {
   const [removeCover, setRemoveCover] = useState(false);
   const [logoUrl, setLogo] = useFilePreview();
   const [coverUrl, setCover] = useFilePreview();
+  const [coverCheck, setCoverCheck] = useState(null);
   const ref = useRef(null);
+
+  // Periksa ukuran sampul yang dipilih terhadap rasio tampil 16:5 (lihat .pub-cover di globals.css).
+  function checkCover(file) {
+    setCover(file);
+    setCoverCheck(null);
+    if (!file) return;
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const { naturalWidth: w, naturalHeight: h } = img;
+      URL.revokeObjectURL(url);
+      const ratio = w / h;
+      const target = 16 / 5;
+      const notes = [];
+      if (ratio < target * 0.9) notes.push(`terlalu tinggi, bagian atas dan bawah akan terpotong sekitar ${Math.round((1 - ratio / target) * 100)}%`);
+      else if (ratio > target * 1.1) notes.push(`terlalu lebar, bagian kiri dan kanan akan terpotong sekitar ${Math.round((1 - target / ratio) * 100)}%`);
+      if (w < 1200) notes.push('lebarnya di bawah 1200 px sehingga bisa terlihat buram di layar besar');
+      setCoverCheck({ ok: notes.length === 0, text: `Gambar ${w} × ${h} px` + (notes.length ? `: ${notes.join('; ')}.` : ': ukurannya sudah pas, tidak ada yang terpotong.') });
+    };
+    img.onerror = () => URL.revokeObjectURL(url);
+    img.src = url;
+  }
   const set = (patch) => setV((s) => ({ ...s, ...patch }));
 
   // React mengosongkan form setelah action sukses: samakan state pratinjau.
@@ -40,6 +63,7 @@ export default function BrandFields({ app, brand, style: savedStyle }) {
     const onReset = () => {
       setLogo(null);
       setCover(null);
+      setCoverCheck(null);
       setRemoveLogo(false);
       setRemoveCover(false);
       if (!brand) setV(initial);
@@ -101,8 +125,15 @@ export default function BrandFields({ app, brand, style: savedStyle }) {
           <input id={`btn-${id}`} type="text" name="button_label" value={v.button_label} onChange={(e) => set({ button_label: e.target.value })} maxLength={30} placeholder="Kirim" />
         </div>
         <div>
-          <label htmlFor={`cover-${id}`}>Gambar sampul di atas form (PNG/JPG/WEBP, maks. 1 MB, opsional)</label>
-          <input id={`cover-${id}`} type="file" name="cover" accept="image/png,image/jpeg,image/webp" onChange={(e) => setCover(e.target.files?.[0])} />
+          <label htmlFor={`cover-${id}`}>Gambar sampul di atas form (opsional)</label>
+          <input id={`cover-${id}`} type="file" name="cover" accept="image/png,image/jpeg,image/webp" onChange={(e) => checkCover(e.target.files?.[0])} />
+          <ul className="cover-rules">
+            <li>Ukuran ideal <strong>1600 × 500 px</strong> (rasio 16:5, landscape memanjang). Sampul selalu tampil dengan rasio ini di HP maupun laptop.</li>
+            <li>Gambar dengan rasio lain tidak diregangkan, tapi dipotong rata tengah.</li>
+            <li>Taruh teks, logo, atau wajah di bagian tengah dan beri jarak dari tepi.</li>
+            <li>PNG, JPG, atau WEBP, maksimal 1 MB.</li>
+          </ul>
+          {coverCheck && <p className={coverCheck.ok ? 'ok' : 'warn'} role="status" style={{ margin: '6px 0 0' }}>{coverCheck.text}</p>}
           {brand?.cover && (
             <label className="opt"><input type="checkbox" name="remove_cover" checked={removeCover} onChange={(e) => setRemoveCover(e.target.checked)} /> Hapus gambar sampul</label>
           )}

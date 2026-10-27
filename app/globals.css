@@ -213,7 +213,8 @@ td a { font-weight: 600; }
 .pub-head img { height: 36px; width: auto; max-width: 140px; object-fit: contain; }
 .pub-sep { color: var(--pub-muted); }
 .pub-wrap { max-width: 680px; margin: 0 auto; padding: 28px 20px 64px; }
-.pub-cover { display: block; width: 100%; height: 180px; object-fit: cover; border-radius: var(--pub-radius); margin-bottom: 24px; }
+/* Sampul selalu 16:5 di semua layar, jadi gambar 1600x500 tidak terpotong; rasio lain dipotong rata tengah. */
+.pub-cover { display: block; width: 100%; aspect-ratio: 16 / 5; height: auto; object-fit: cover; object-position: center; border-radius: var(--pub-radius); margin-bottom: 24px; }
 .pub-wrap > h1 { font-size: 24px; margin-bottom: 8px; }
 .pub-wrap > h1 + .panel, .pub-wrap > p + .panel, .pub-wrap > p + form { margin-top: 20px; }
 .pub .panel { background: var(--pub-card); border-radius: var(--pub-radius); }
@@ -244,7 +245,7 @@ td a { font-weight: 600; }
 .preview-frame { border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; max-height: 620px; overflow-y: auto; pointer-events: none; }
 .pub.preview { min-height: 0; font-size: 13px; }
 .pub.preview .pub-wrap { padding: 20px 16px 8px; }
-.pub.preview .pub-cover { height: 110px; margin-bottom: 16px; }
+.pub.preview .pub-cover { margin-bottom: 16px; }
 .pub.preview .pub-wrap > h1 { font-size: 19px; }
 .pub.preview .panel { padding: 18px; margin-bottom: 8px; }
 .pub.preview .field { margin-bottom: 16px; }
@@ -456,3 +457,6 @@ td .mono { white-space: nowrap; }
 .scan-video { position: relative; border-radius: var(--radius); overflow: hidden; background: #000; aspect-ratio: 4 / 3; }
 .scan-video video { width: 100%; height: 100%; object-fit: cover; display: block; }
 .scan-guide { position: absolute; left: 10%; right: 10%; top: 35%; bottom: 35%; border: 2px solid #fff; border-radius: 8px; box-shadow: 0 0 0 9999px rgba(0, 0, 0, .25); }
+.cover-rules { margin: 6px 0 0; padding-left: 18px; font-size: 13px; color: var(--muted); }
+.cover-rules li { margin: 2px 0; }
+.warn { color: #9a5b00; font-size: 14px; }
