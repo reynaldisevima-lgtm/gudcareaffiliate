@@ -25,13 +25,21 @@ export async function GET(req, { params }) {
 
   let body;
   let type;
-  if (format === 'pdf') {
-    const v = primaryVars(settings.primary);
-    body = await reportPdf(d, { appName: settings.app_name, colors: { chart: v['--primary-chart'], track: v['--primary-light'] } });
-    type = 'application/pdf';
-  } else {
-    body = await reportXlsx(d, { appName: settings.app_name, origin: new URL(req.url).origin });
-    type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+  try {
+    if (format === 'pdf') {
+      const v = primaryVars(settings.primary);
+      body = await reportPdf(d, { appName: settings.app_name, colors: { chart: v['--primary-chart'], track: v['--primary-light'] } });
+      type = 'application/pdf';
+    } else {
+      body = await reportXlsx(d, { appName: settings.app_name, origin: new URL(req.url).origin });
+      type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    }
+  } catch (e) {
+    console.error(`Gagal membuat laporan ${format} form ${form.id}:`, e);
+    return new Response(`Laporan ${format === 'pdf' ? 'PDF' : 'Excel'} gagal dibuat. Coba lagi, atau hubungi pengelola aplikasi.`, {
+      status: 500,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+    });
   }
   await audit(user, {
     action: 'report.export',
