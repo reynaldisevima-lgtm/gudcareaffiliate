@@ -218,7 +218,7 @@ export default async function GuidePage() {
           <li>Di menu <B>Pengiriman</B>, centang penerima (affiliate maupun KOL), lalu klik <B>Cetak label terpilih</B>. Untuk satu penerima, klik <B>Cetak label</B> di halaman detailnya.</li>
           <li>Pilih ukuran: <B>Thermal 100 × 150 mm</B> untuk printer label, atau <B>A4</B> (4 label per halaman). Klik <B>Cetak</B>.</li>
         </ol>
-        <p className="note">Alamat affiliate diambil dari pertanyaan bertipe <em>Alamat</em> di form. Untuk form tanpa pertanyaan itu, label tetap tercetak dengan ruang alamat kosong untuk diisi manual.</p>
+        <p className="note">Alamat affiliate diambil dari pertanyaan bertipe <em>Alamat</em>; bila form tidak memakainya, dari pertanyaan teks yang judulnya mengandung kata “Alamat”. Gunakan tipe <em>Alamat</em> agar provinsi, kota, dan kode pos selalu lengkap.</p>
       </Section>
 
       <Section id="aplikasi" title="11. Mengatur tampilan aplikasi">

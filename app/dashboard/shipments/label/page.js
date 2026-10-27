@@ -62,7 +62,7 @@ export default async function LabelPage({ searchParams }) {
           <p className="error" style={{ margin: '10px 0 0' }}>Ada brand tanpa no. HP. Isi no. HP brand di menu Brand agar tampil sebagai pengirim.</p>
         )}
         {labels.some((l) => !l.recipient.address) && (
-          <p className="error" style={{ margin: '6px 0 0' }}>Ada penerima tanpa alamat terstruktur (form tidak memakai pertanyaan Alamat). Lengkapi alamat secara manual di label.</p>
+          <p className="error" style={{ margin: '6px 0 0' }}>Ada penerima tanpa alamat (form tidak punya pertanyaan Alamat atau belum diisi). Lengkapi alamat secara manual di label.</p>
         )}
       </div>
 
@@ -80,7 +80,7 @@ export default async function LabelPage({ searchParams }) {
                 <div className="sl-cap">Penerima</div>
                 <div className="sl-name big">{l.recipient.name}</div>
                 <div className="sl-phone">{l.recipient.phone || '-'}</div>
-                <div className="sl-addr">{l.recipient.address ? formatAddress(l.recipient.address) : ' '}</div>
+                <div className="sl-addr">{typeof l.recipient.address === 'string' ? l.recipient.address : l.recipient.address ? formatAddress(l.recipient.address) : ' '}</div>
               </section>
               <section className="sl-block">
                 <div className="sl-cap">Pengirim</div>
