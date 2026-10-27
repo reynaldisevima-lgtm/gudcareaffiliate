@@ -1,16 +1,28 @@
 'use client';
 import { useActionState, useEffect, useState } from 'react';
 import { updateShipment } from '@/app/actions';
-import { STATUSES, COURIERS } from '@/lib/shipping';
+import { STATUSES, COURIERS, FLOW, statusLabel, detectCourier, cleanResi } from '@/lib/shipping';
+import ResiScanner from '@/components/ResiScanner';
 
 export default function ShipmentForm({ responseId, initial }) {
   const [state, action, pending] = useActionState(updateShipment, null);
   const [v, setV] = useState(initial);
   const [note, setNote] = useState('');
   const [notePublic, setNotePublic] = useState(false);
+  const [scanned, setScanned] = useState(null);
   const set = (patch) => setV((s) => ({ ...s, ...patch }));
 
-  useEffect(() => { if (state?.ok) { setNote(''); setNotePublic(false); } }, [state]);
+  useEffect(() => { if (state?.ok) { setNote(''); setNotePublic(false); setScanned(null); } }, [state]);
+
+  // Hasil scan mengisi no. resi, kurir (bila formatnya dikenali), dan menaikkan status ke Dikirim.
+  // Belum tersimpan sampai tombol Simpan update diklik.
+  function onScan(text) {
+    const resi = cleanResi(text);
+    const courier = detectCourier(resi);
+    const raiseStatus = FLOW.indexOf(v.status) >= 0 && FLOW.indexOf(v.status) < FLOW.indexOf('shipped');
+    set({ tracking_no: resi, ...(courier ? { courier } : {}), ...(raiseStatus ? { status: 'shipped' } : {}) });
+    setScanned({ resi, courier, status: raiseStatus ? statusLabel('shipped') : null });
+  }
 
   return (
     <form action={action} className="stack">
@@ -24,6 +36,17 @@ export default function ShipmentForm({ responseId, initial }) {
       <div>
         <label htmlFor="items">Barang yang dikirim</label>
         <input id="items" name="items" type="text" value={v.items} onChange={(e) => set({ items: e.target.value })} maxLength={500} placeholder="mis. Serum 30 ml x1, Sunscreen x1" />
+      </div>
+      <div>
+        <label>Scan barcode resi</label>
+        <ResiScanner onResult={onScan} />
+        {scanned && (
+          <p className="ok" role="status" style={{ margin: '8px 0 0' }}>
+            Resi terbaca: <strong>{scanned.resi}</strong>
+            {scanned.courier ? ` · kurir terdeteksi: ${scanned.courier}` : ' · kurir tidak dikenali, isi manual'}
+            {scanned.status ? ` · status diubah ke ${scanned.status}` : ''}. Periksa lalu klik Simpan update.
+          </p>
+        )}
       </div>
       <div className="row">
         <div className="grow">

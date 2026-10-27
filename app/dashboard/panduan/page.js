@@ -159,6 +159,7 @@ export default async function GuidePage() {
           <li>Buka menu <B>Pengiriman</B> (semua form) atau tab <B>Pengiriman</B> di sebuah form.</li>
           <li>Gunakan kolom cari (nama, nomor WhatsApp, resi, atau barang) dan filter status untuk menemukan affiliate.</li>
           <li>Klik <B>Update</B>, lalu isi <B>Status</B>, <B>Barang yang dikirim</B>, <B>Kurir</B>, dan <B>No. resi</B>.</li>
+          <li>Agar cepat, klik <B>Scan resi</B> lalu arahkan kamera ke barcode resi di label paket, atau <B>Ambil foto label</B>. No. resi terisi otomatis, kurir ditebak dari format resinya (mis. J&amp;T, Shopee Express, Ninja Xpress, Pos Indonesia, GoSend), dan status naik ke <em>Dikirim</em>. Periksa dulu, lalu klik <B>Simpan update</B>.</li>
           <li>Tulis <B>Catatan untuk riwayat</B> bila perlu. Centang <B>Tampilkan catatan ini ke pengisi</B> hanya untuk catatan yang boleh dibaca affiliate; tanpa centang, catatan hanya untuk internal.</li>
           <li>Klik <B>Simpan update</B>. Setiap perubahan tercatat di <B>Riwayat</B> beserta waktu dan nama yang mengubah.</li>
         </ol>

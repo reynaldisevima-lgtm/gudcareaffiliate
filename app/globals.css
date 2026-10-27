@@ -449,3 +449,10 @@ td .mono { white-space: nowrap; }
 .brand-initial { display: inline-flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; text-shadow: 0 0 2px rgba(0, 0, 0, .35); }
 .member-list .member { padding: 10px 0; border-bottom: 1px solid var(--line); }
 .member-list .member:last-child { border-bottom: 0; }
+
+/* ---------- scan barcode resi ---------- */
+.scan-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(20, 24, 33, .72); display: grid; place-items: center; padding: 16px; }
+.scan-box { width: min(480px, 100%); background: #fff; border-radius: var(--radius-lg); padding: 16px; box-shadow: var(--shadow); }
+.scan-video { position: relative; border-radius: var(--radius); overflow: hidden; background: #000; aspect-ratio: 4 / 3; }
+.scan-video video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.scan-guide { position: absolute; left: 10%; right: 10%; top: 35%; bottom: 35%; border: 2px solid #fff; border-radius: 8px; box-shadow: 0 0 0 9999px rgba(0, 0, 0, .25); }
