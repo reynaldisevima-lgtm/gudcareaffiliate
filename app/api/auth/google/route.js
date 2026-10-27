@@ -6,8 +6,8 @@ import { googleEnabled, authorizationRequest, appOrigin } from '@/lib/google';
 
 export const dynamic = 'force-dynamic';
 
-// Mulai login Google: simpan state/nonce/PKCE (dan kode undangan bila ada) di cookie singkat
-// lalu arahkan ke Google.
+// Mulai login Google: simpan state/nonce/PKCE (dan kode undangan atau nama workspace baru bila ada)
+// di cookie singkat lalu arahkan ke Google.
 export async function GET(req) {
   if (!googleEnabled()) return NextResponse.redirect(new URL('/login?error=google_off', appOrigin(req)));
   const { url, saved } = authorizationRequest(req);
@@ -18,6 +18,9 @@ export async function GET(req) {
     }
     saved.invite = invite;
   }
+  // Pendaftaran project leader baru: nama workspace dari halaman /daftar.
+  const signup = String(new URL(req.url).searchParams.get('signup') || '').trim().slice(0, 60);
+  if (signup.length >= 2 && !invite) saved.signup = signup;
   (await cookies()).set('g_oauth', JSON.stringify(saved), {
     httpOnly: true,
     sameSite: 'lax',

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { requireUser } from '@/lib/auth';
+import { requireAffiliate } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { RANGES } from '@/lib/stats';
 import { buildOverview } from '@/lib/overview';
@@ -16,11 +16,11 @@ export const metadata = { title: 'Dashboard' };
 const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
 
 export default async function OverviewPage({ searchParams }) {
-  const user = await requireUser();
+  const user = await requireAffiliate();
   const isAdmin = user.role === 'admin';
   const sp = await searchParams;
   const range = RANGES.some((r) => r.value === sp.range) ? sp.range : '30';
-  const brands = isAdmin ? await db.all('SELECT id, name FROM brands ORDER BY name') : [];
+  const brands = isAdmin ? await db.all('SELECT id, name FROM brands WHERE workspace_id=? ORDER BY name', user.workspace_id) : [];
   const brand = isAdmin ? brands.find((b) => String(b.id) === sp.brand) : null;
   const o = await buildOverview(user, { range, brandId: brand?.id });
   const scopeName = isAdmin ? (brand ? brand.name : 'Semua brand') : user.brand_name;

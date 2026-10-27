@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 
 function getForm(slug) {
   return db.get(`SELECT f.*, b.name AS brand_name, b.color AS brand_color, b.logo AS brand_logo,
-              b.cover AS brand_cover, b.style AS brand_style
+              b.cover AS brand_cover, b.style AS brand_style, b.workspace_id AS brand_workspace
        FROM forms f JOIN brands b ON b.id=f.brand_id WHERE f.slug=? AND f.deleted_at IS NULL`, slug);
 }
 
@@ -26,7 +26,7 @@ export default async function PublicForm({ params }) {
   const style = parseStyle(form.brand_style);
 
   return (
-    <PublicShell app={publicApp(await getSettings())} brand={{ name: form.brand_name, color: form.brand_color, logo: form.brand_logo }} style={style} cover={form.brand_cover}>
+    <PublicShell app={publicApp(await getSettings(form.brand_workspace))} brand={{ name: form.brand_name, color: form.brand_color, logo: form.brand_logo }} style={style} cover={form.brand_cover}>
       <h1>{form.title}</h1>
       {form.description && <p style={{ whiteSpace: 'pre-wrap' }}>{form.description}</p>}
       {form.is_active ? (

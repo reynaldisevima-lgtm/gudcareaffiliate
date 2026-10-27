@@ -13,6 +13,7 @@ const ICONS = {
   truck: <><path d="M5 17a2 2 0 1 0 4 0a2 2 0 1 0-4 0M15 17a2 2 0 1 0 4 0a2 2 0 1 0-4 0" /><path d="M5 17H3V6a1 1 0 0 1 1-1h9v12m-4 0h6m4 0h2v-6h-8m0-5h5l3 5" /></>,
   book: <><path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0" /><path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0" /><path d="M3 6v13M12 6v13M21 6v13" /></>,
   settings: <><path d="M10.3 4.3c.4-1.8 3-1.8 3.4 0a1.7 1.7 0 0 0 2.6 1.1c1.5-.9 3.3.8 2.4 2.4a1.7 1.7 0 0 0 1 2.5c1.8.5 1.8 3 0 3.5a1.7 1.7 0 0 0-1 2.5c.9 1.6-.9 3.3-2.4 2.4a1.7 1.7 0 0 0-2.6 1.1c-.4 1.8-3 1.8-3.4 0a1.7 1.7 0 0 0-2.6-1.1c-1.5.9-3.3-.8-2.4-2.4a1.7 1.7 0 0 0-1-2.5c-1.8-.5-1.8-3 0-3.5a1.7 1.7 0 0 0 1-2.5c-.9-1.6.9-3.3 2.4-2.4a1.7 1.7 0 0 0 2.6-1.1z" /><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0-6 0" /></>,
+  users: <><path d="M9 7a4 4 0 1 0 8 0a4 4 0 1 0-8 0" /><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" /><path d="M16 3.13a4 4 0 0 1 0 7.75M21 21v-2a4 4 0 0 0-3-3.85" /></>,
   chart: <><path d="M3 3v18h18" /><path d="M7 15v2M11 11v6M15 7v10M19 13v4" /></>,
   history: <><path d="M12 8v4l2 2" /><path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5" /></>,
   menu: <path d="M4 6h16M4 12h16M4 18h16" />,
@@ -48,9 +49,12 @@ export default function DashboardShell({ app, user, children }) {
   }, [menu]);
 
   const nav = [
+    ...(user.access !== 'kol' ? [
     { href: '/dashboard/statistik', label: 'Dashboard', icon: 'chart', active: pathname.startsWith('/dashboard/statistik') },
     { href: '/dashboard', label: 'Form', icon: 'forms', active: pathname === '/dashboard' || (pathname.startsWith('/dashboard/forms') && !pathname.endsWith('/shipments')) },
-    { href: '/dashboard/shipments', label: 'Pengiriman', icon: 'truck', active: pathname.startsWith('/dashboard/shipments') || /^\/dashboard\/forms\/\d+\/shipments/.test(pathname) },
+    ] : []),
+    { href: '/dashboard/shipments', label: 'Pengiriman', icon: 'truck', active: (pathname.startsWith('/dashboard/shipments') && !pathname.startsWith('/dashboard/shipments/kol')) || /^\/dashboard\/forms\/\d+\/shipments/.test(pathname) },
+    ...(user.access !== 'affiliate' ? [{ href: '/dashboard/kol', label: 'KOL', icon: 'users', active: pathname.startsWith('/dashboard/kol') || pathname.startsWith('/dashboard/shipments/kol') }] : []),
     { href: '/dashboard/brands', label: isAdmin ? 'Brand & akun' : 'Brand saya', icon: 'brand', active: pathname.startsWith('/dashboard/brands') },
     ...(isAdmin
       ? [
@@ -59,6 +63,7 @@ export default function DashboardShell({ app, user, children }) {
           { href: '/dashboard/panduan', label: 'Panduan admin', icon: 'book', active: pathname.startsWith('/dashboard/panduan') },
         ]
       : []),
+    ...(user.is_owner ? [{ href: '/dashboard/workspaces', label: 'Semua workspace', icon: 'brand', active: pathname.startsWith('/dashboard/workspaces') }] : []),
   ];
 
   return (
@@ -96,7 +101,7 @@ export default function DashboardShell({ app, user, children }) {
                   <span className="avatar lg" aria-hidden="true">{displayName[0]}</span>
                   <div>
                     <p className="profile-name">{displayName}</p>
-                    <p className="muted">{isAdmin ? `Admin ${app.app_name}` : user.brand_name}</p>
+                    <p className="muted">{isAdmin ? `Super admin · ${user.workspace_name}` : `${user.brand_name} · ${user.workspace_name}`}</p>
                     <p className="muted">{user.email}</p>
                   </div>
                 </div>

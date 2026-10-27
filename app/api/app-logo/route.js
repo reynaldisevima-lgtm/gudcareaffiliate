@@ -3,8 +3,9 @@ import { getSettings } from '@/lib/settings';
 export const dynamic = 'force-dynamic';
 
 // Gambar logo aplikasi dari Pengaturan aplikasi. URL membawa ?v=<hash> sehingga aman di-cache lama.
-export async function GET() {
-  const { logo } = await getSettings();
+// ?w=<workspace>: halaman publik (tanpa login) membawa workspace pemilik form.
+export async function GET(req) {
+  const { logo } = await getSettings(new URL(req.url).searchParams.get('w'));
   const m = /^data:(image\/(?:png|jpeg|webp|svg\+xml));base64,(.+)$/.exec(logo || '');
   if (!m) return new Response('Not found', { status: 404 });
   return new Response(Buffer.from(m[2], 'base64'), {

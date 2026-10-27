@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { db } from '@/lib/db';
-import { requireUser } from '@/lib/auth';
-import { updateBrand, createBrandUser, resetUserPassword, deleteBrandUser } from '@/app/actions';
+import { requireUser, getAccessibleBrand, ACCESS, accessLabel } from '@/lib/auth';
+import { updateBrand, createBrandUser, setUserAccess, resetUserPassword, deleteBrandUser } from '@/app/actions';
 import { parseStyle } from '@/lib/brandStyle';
 import { getSettings, publicApp } from '@/lib/settings';
 import { fmtNum } from '@/lib/format';
@@ -15,7 +15,8 @@ import InviteLink from '@/components/InviteLink';
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }) {
-  const b = await db.get('SELECT name FROM brands WHERE id=?', Number((await params).id));
+  const user = await requireUser();
+  const b = await getAccessibleBrand(user, (await params).id);
   return { title: b ? `Brand ${b.name}` : 'Brand tidak ditemukan' };
 }
 
@@ -24,8 +25,8 @@ export default async function BrandDetailPage({ params }) {
   const { id } = await params;
   const user = await requireUser();
   const isAdmin = user.role === 'admin';
-  const b = await db.get('SELECT * FROM brands WHERE id=?', Number(id));
-  if (!b || (!isAdmin && b.id !== user.brand_id)) notFound();
+  const b = await getAccessibleBrand(user, id);
+  if (!b) notFound();
   const app = publicApp(await getSettings());
   const stats = await db.get(
     `SELECT (SELECT COUNT(*)::int FROM forms WHERE brand_id=? AND deleted_at IS NULL) AS forms,
@@ -33,7 +34,7 @@ export default async function BrandDetailPage({ params }) {
     b.id, b.id
   );
   const users = await db.all(
-    "SELECT id, email, name, google_sub IS NOT NULL AS google, password_hash<>'' AS has_password FROM users WHERE role='brand' AND brand_id=? ORDER BY name",
+    "SELECT id, email, name, access, google_sub IS NOT NULL AS google, password_hash<>'' AS has_password FROM users WHERE role='brand' AND brand_id=? ORDER BY name",
     b.id
   );
 
@@ -70,10 +71,17 @@ export default async function BrandDetailPage({ params }) {
                 <span>
                   <strong>{u.name}</strong> <span className="muted">{u.email}</span>{' '}
                   {isAdmin && <span className="tag">{u.google ? 'Google terhubung' : 'Google belum dipakai'}</span>}{' '}
-                  {isAdmin && !u.has_password && <span className="tag">Tanpa password</span>}
+                  {isAdmin && !u.has_password && <span className="tag">Tanpa password</span>}{' '}
+                  {!isAdmin && <span className="tag">{accessLabel(u.access)}</span>}
                 </span>
                 {isAdmin && (
                   <div className="row">
+                    <ActionForm action={setUserAccess} submitLabel="Simpan akses" primary={false} className="row">
+                      <input type="hidden" name="user_id" value={u.id} />
+                      <select name="access" defaultValue={u.access} aria-label={`Akses ${u.email}`} style={{ width: 'auto' }}>
+                        {ACCESS.map((a) => <option key={a.value} value={a.value}>{a.label}</option>)}
+                      </select>
+                    </ActionForm>
                     <ActionForm action={resetUserPassword} submitLabel="Ganti password" primary={false} className="row">
                       <input type="hidden" name="user_id" value={u.id} />
                       <input type="password" name="password" placeholder="Password baru" minLength={8} required style={{ width: 160 }} aria-label={`Password baru ${u.email}`} />
@@ -97,7 +105,14 @@ export default async function BrandDetailPage({ params }) {
                 <div className="grow"><label htmlFor="new-name">Nama</label><input id="new-name" type="text" name="name" required /></div>
                 <div className="grow"><label htmlFor="new-email">Email</label><input id="new-email" type="email" name="email" required /></div>
                 <div className="grow"><label htmlFor="new-pass">Password (opsional, min. 8)</label><input id="new-pass" type="password" name="password" minLength={8} placeholder="Kosongkan bila hanya login Google" /></div>
+                <div>
+                  <label htmlFor="new-access">Akses</label>
+                  <select id="new-access" name="access" defaultValue="all" style={{ width: 'auto' }}>
+                    {ACCESS.map((a) => <option key={a.value} value={a.value}>{a.label}</option>)}
+                  </select>
+                </div>
               </div>
+              <p className="muted" style={{ margin: 0 }}>Affiliate: form, jawaban, dan pengiriman affiliate. KOL: data talent KOL dan pengirimannya. Akun dari link undangan mendapat akses Affiliate & KOL; ubah di daftar di atas bila perlu.</p>
             </ActionForm>
           </div>
         )}

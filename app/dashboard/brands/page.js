@@ -19,8 +19,8 @@ export default async function BrandsPage({ searchParams }) {
             (SELECT COUNT(*)::int FROM responses r JOIN forms f ON f.id=r.form_id
               WHERE f.brand_id=b.id AND f.deleted_at IS NULL AND r.deleted_at IS NULL) AS responses,
             (SELECT COUNT(*)::int FROM users u WHERE u.brand_id=b.id) AS accounts
-     FROM brands b ${q ? 'WHERE b.name ILIKE ?' : ''} ORDER BY b.name`,
-    ...(q ? [`%${q}%`] : [])
+     FROM brands b WHERE b.workspace_id=? ${q ? 'AND b.name ILIKE ?' : ''} ORDER BY b.name`,
+    user.workspace_id, ...(q ? [`%${q}%`] : [])
   );
 
   return (

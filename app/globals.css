@@ -467,3 +467,38 @@ td .mono { white-space: nowrap; }
 .address-fields .sub-label { font-size: 13px; font-weight: 500; color: var(--pub-muted, var(--muted)); margin-bottom: 4px; }
 @media (max-width: 520px) { .address-fields { grid-template-columns: 1fr; } }
 .tag.k-unduh { background: #e8f4fd; color: #1f6aa5; }
+.tag.k-kol { background: #f0ebff; color: #6a4cd6; }
+.tag.k-aff { background: #eef1f6; color: var(--muted); }
+
+/* KOL */
+.chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.chip { display: inline-block; padding: 2px 8px; border-radius: 999px; background: var(--primary-light); color: var(--primary-text); font-size: 12px; white-space: nowrap; }
+.social-rows { display: grid; gap: 8px; justify-items: start; }
+.social-rows .social-row { width: 100%; flex-wrap: nowrap; }
+@media (max-width: 520px) { .social-rows .social-row { flex-wrap: wrap; } }
+
+/* Label pengiriman (layar & cetak) */
+.label-sheet { display: flex; flex-wrap: wrap; gap: 16px; }
+.ship-label { box-sizing: border-box; display: flex; flex-direction: column; background: #fff; color: #000; border: 1.5px solid #000; font-size: 12px; line-height: 1.35; break-inside: avoid; page-break-inside: avoid; overflow: hidden; }
+.size-thermal .ship-label { width: 100mm; height: 150mm; }
+.size-a4 .ship-label { width: calc(50% - 8px); height: 135mm; }
+.sl-head { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; border-bottom: 1.5px solid #000; font-size: 14px; }
+.sl-tag { padding: 1px 8px; border: 1.5px solid #000; border-radius: 4px; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+.sl-block { padding: 7px 10px; border-bottom: 1px dashed #000; }
+.sl-to { flex: 1; }
+.sl-cap { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 2px; }
+.sl-name { font-weight: 700; }
+.sl-name.big { font-size: 18px; line-height: 1.2; }
+.sl-phone { font-size: 14px; font-weight: 600; margin: 2px 0 4px; }
+.sl-addr { font-size: 13px; white-space: pre-wrap; }
+.sl-items { font-size: 13px; font-weight: 600; }
+.sl-resi { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 16px; font-weight: 700; letter-spacing: .04em; }
+.sl-foot { margin-top: auto; padding: 5px 10px; font-size: 10px; }
+@media print {
+  .label-sheet { display: block; }
+  .size-thermal .ship-label { border: 0; page-break-after: always; break-after: page; }
+  .size-thermal .ship-label:last-child { page-break-after: auto; break-after: auto; }
+  .size-a4 .label-sheet, .label-sheet.size-a4 { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; }
+  .size-a4 .ship-label { width: auto; }
+  .size-a4 .ship-label:nth-child(4n) { page-break-after: always; break-after: page; }
+}

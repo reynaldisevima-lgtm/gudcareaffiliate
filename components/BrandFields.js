@@ -90,6 +90,11 @@ export default function BrandFields({ app, brand, style: savedStyle }) {
           </div>
         </div>
         <div>
+          <label htmlFor={`phone-${id}`}>No. HP brand</label>
+          <input id={`phone-${id}`} type="text" name="phone" inputMode="tel" defaultValue={brand?.phone || ''} maxLength={25} placeholder="mis. 0812-3456-7890" />
+          <p className="muted" style={{ margin: '4px 0 0' }}>Dipakai sebagai nomor pengirim di label pengiriman.</p>
+        </div>
+        <div>
           <label htmlFor={`logo-${id}`}>Logo (PNG/JPG/WEBP/SVG, maks. 300 KB)</label>
           <input id={`logo-${id}`} type="file" name="logo" accept="image/png,image/jpeg,image/webp,image/svg+xml" onChange={(e) => setLogo(e.target.files?.[0])} />
           {brand?.logo && (

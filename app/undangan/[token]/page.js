@@ -10,7 +10,7 @@ import GoogleIcon from '@/components/GoogleIcon';
 export const dynamic = 'force-dynamic';
 
 const getBrand = (token) =>
-  /^[0-9a-f]{32}$/.test(token) ? db.get('SELECT id, name, logo FROM brands WHERE invite_token=?', token) : null;
+  /^[0-9a-f]{32}$/.test(token) ? db.get('SELECT id, name, logo, workspace_id FROM brands WHERE invite_token=?', token) : null;
 
 export async function generateMetadata({ params }) {
   const brand = await getBrand((await params).token);
@@ -23,7 +23,7 @@ export default async function InvitePage({ params }) {
   const brand = await getBrand(token);
   if (!brand) notFound();
   const user = await getUser();
-  const app = await getSettings();
+  const app = await getSettings(brand.workspace_id);
 
   return (
     <div className="auth">

@@ -13,12 +13,18 @@ export const dynamic = 'force-dynamic';
 // dan catatan yang ditandai publik; jawaban lain dan nama petugas tidak ditampilkan.
 async function getTracking(token) {
   if (!/^[A-Za-z0-9_-]{16}$/.test(token)) return null;
-  return db.get(`SELECT r.id, r.answers, r.created_at, f.title AS form_title, f.questions,
-              b.name AS brand_name, b.color AS brand_color, b.logo AS brand_logo, b.cover AS brand_cover, b.style AS brand_style,
+  return (await db.get(`SELECT r.id, r.answers, r.created_at, f.title AS form_title, f.questions,
+              b.name AS brand_name, b.color AS brand_color, b.logo AS brand_logo, b.cover AS brand_cover, b.style AS brand_style, b.workspace_id AS brand_workspace,
               s.id AS shipment_id, s.status, s.items, s.courier, s.tracking_no, s.updated_at
        FROM responses r JOIN forms f ON f.id=r.form_id JOIN brands b ON b.id=f.brand_id
        LEFT JOIN shipments s ON s.response_id=r.id
-       WHERE r.track_token=? AND r.deleted_at IS NULL AND f.deleted_at IS NULL`, token);
+       WHERE r.track_token=? AND r.deleted_at IS NULL AND f.deleted_at IS NULL`, token))
+    // Pengiriman ke KOL: token ada di shipments. Hanya nama KOL yang diambil, data sensitif tidak.
+    || db.get(`SELECT s.created_at, NULL AS form_title, k.name AS kol_name,
+              b.name AS brand_name, b.color AS brand_color, b.logo AS brand_logo, b.cover AS brand_cover, b.style AS brand_style, b.workspace_id AS brand_workspace,
+              s.id AS shipment_id, s.status, s.items, s.courier, s.tracking_no, s.updated_at
+       FROM shipments s JOIN kols k ON k.id=s.kol_id JOIN brands b ON b.id=k.brand_id
+       WHERE s.track_token=? AND k.deleted_at IS NULL`, token);
 }
 
 export async function generateMetadata({ params }) {
@@ -31,16 +37,16 @@ export default async function TrackPage({ params }) {
   const { token } = await params;
   const t = await getTracking(token);
   if (!t) notFound();
-  const who = respondent(JSON.parse(t.questions), JSON.parse(t.answers), t.id);
+  const who = t.kol_name ? { name: t.kol_name } : respondent(JSON.parse(t.questions), JSON.parse(t.answers), t.id);
   const status = t.status || 'pending';
   const events = t.shipment_id
     ? (await db.all('SELECT status, note, is_public, courier, tracking_no, created_at FROM shipment_events WHERE shipment_id=? ORDER BY id DESC', t.shipment_id))
     : [];
 
   return (
-    <PublicShell app={publicApp(await getSettings())} brand={{ name: t.brand_name, color: t.brand_color, logo: t.brand_logo }} style={parseStyle(t.brand_style)} cover={null}>
+    <PublicShell app={publicApp(await getSettings(t.brand_workspace))} brand={{ name: t.brand_name, color: t.brand_color, logo: t.brand_logo }} style={parseStyle(t.brand_style)} cover={null}>
       <h1>Lacak kiriman</h1>
-      <p>Halo {who.name.startsWith('Pengisi #') ? '' : who.name}, ini status barang dari {t.brand_name} untuk pendaftaran “{t.form_title}”.</p>
+      <p>Halo {who.name.startsWith('Pengisi #') ? '' : who.name}, ini status barang dari {t.brand_name}{t.form_title ? ` untuk pendaftaran “${t.form_title}”` : ''}.</p>
 
       <div className="panel">
         <div className="row between" style={{ marginBottom: 16 }}>
@@ -78,7 +84,7 @@ export default async function TrackPage({ params }) {
             </li>
           ))}
           <li>
-            <strong>Form terkirim</strong>
+            <strong>{t.form_title ? 'Form terkirim' : 'Pengiriman dibuat'}</strong>
             <p className="muted" style={{ margin: '2px 0 0' }}>{fmtUtc(t.created_at)}</p>
           </li>
         </ol>

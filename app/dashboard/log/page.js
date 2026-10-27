@@ -3,7 +3,7 @@ import { requireAdmin } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { ACTIONS, KINDS } from '@/lib/audit';
 import { fmtUtc } from '@/lib/format';
-import { restoreForm, restoreResponse, revertForm } from '@/app/actions';
+import { restoreForm, restoreResponse, revertForm, restoreKol } from '@/app/actions';
 import PageHeader from '@/components/PageHeader';
 import ConfirmButton from '@/components/ConfirmButton';
 
@@ -28,16 +28,16 @@ function Changes({ changes }) {
 }
 
 export default async function AuditLogPage({ searchParams }) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const sp = await searchParams;
   const kind = KINDS.some((k) => k.value === sp.kind) ? sp.kind : '';
   const q = typeof sp.q === 'string' ? sp.q.trim().slice(0, 100) : '';
-  const brands = await db.all('SELECT id, name FROM brands ORDER BY name');
+  const brands = await db.all('SELECT id, name FROM brands WHERE workspace_id=? ORDER BY name', admin.workspace_id);
   const brand = brands.find((b) => String(b.id) === sp.brand);
   const before = Number(sp.before) || null;
 
-  const where = [];
-  const args = [];
+  const where = [admin.is_owner ? '(workspace_id=? OR workspace_id IS NULL)' : 'workspace_id=?'];
+  const args = [admin.workspace_id];
   if (kind) {
     const actions = Object.entries(ACTIONS).filter(([, a]) => a.kind === kind).map(([k]) => k);
     where.push(`action IN (${actions.map(() => '?').join(',')})`);
@@ -47,7 +47,7 @@ export default async function AuditLogPage({ searchParams }) {
   if (q) { where.push('(summary ILIKE ? OR actor_email ILIKE ? OR actor_name ILIKE ?)'); args.push(`%${q}%`, `%${q}%`, `%${q}%`); }
   if (before) { where.push('id<?'); args.push(before); }
   const rows = await db.all(
-    `SELECT * FROM audit_logs ${where.length ? 'WHERE ' + where.join(' AND ') : ''} ORDER BY id DESC LIMIT ${PAGE + 1}`,
+    `SELECT * FROM audit_logs WHERE ${where.join(' AND ')} ORDER BY id DESC LIMIT ${PAGE + 1}`,
     ...args
   );
   const more = rows.length > PAGE;
@@ -58,12 +58,16 @@ export default async function AuditLogPage({ searchParams }) {
   const formIds = ids('form');
   const responseIds = ids('response');
   const formState = new Map(
-    formIds.length ? (await db.all(`SELECT id, deleted_at FROM forms WHERE id IN (${formIds.map(() => '?').join(',')})`, ...formIds)).map((f) => [f.id, f]) : []
+    formIds.length ? (await db.all(`SELECT f.id, f.deleted_at FROM forms f JOIN brands b ON b.id=f.brand_id WHERE b.workspace_id=? AND f.id IN (${formIds.map(() => '?').join(',')})`, admin.workspace_id, ...formIds)).map((f) => [f.id, f]) : []
   );
   const responseState = new Map(
     responseIds.length
-      ? (await db.all(`SELECT r.id, r.deleted_at, f.deleted_at AS form_deleted_at FROM responses r JOIN forms f ON f.id=r.form_id WHERE r.id IN (${responseIds.map(() => '?').join(',')})`, ...responseIds)).map((r) => [r.id, r])
+      ? (await db.all(`SELECT r.id, r.deleted_at, f.deleted_at AS form_deleted_at FROM responses r JOIN forms f ON f.id=r.form_id JOIN brands b ON b.id=f.brand_id WHERE b.workspace_id=? AND r.id IN (${responseIds.map(() => '?').join(',')})`, admin.workspace_id, ...responseIds)).map((r) => [r.id, r])
       : []
+  );
+  const kolIds = ids('kol');
+  const kolState = new Map(
+    kolIds.length ? (await db.all(`SELECT k.id, k.deleted_at FROM kols k JOIN brands b ON b.id=k.brand_id WHERE b.workspace_id=? AND k.id IN (${kolIds.map(() => '?').join(',')})`, admin.workspace_id, ...kolIds)).map((k) => [k.id, k]) : []
   );
   const brandName = new Map(brands.map((b) => [b.id, b.name]));
   const href = (extra) => '?' + new URLSearchParams({ ...(kind ? { kind } : {}), ...(brand ? { brand: brand.id } : {}), ...(q ? { q } : {}), ...extra });
@@ -92,6 +96,17 @@ export default async function AuditLogPage({ searchParams }) {
         </form>
       );
     }
+    const k = l.target_type === 'kol' ? kolState.get(l.target_id) : null;
+    if (l.action === 'kol.delete') {
+      if (!k) return <span className="muted">Data tidak ada</span>;
+      if (!k.deleted_at) return <span className="muted">Sudah dipulihkan</span>;
+      return (
+        <form action={restoreKol}>
+          <input type="hidden" name="id" value={l.target_id} />
+          <ConfirmButton className="small" message="Pulihkan data KOL ini beserta riwayat pengirimannya?">Pulihkan</ConfirmButton>
+        </form>
+      );
+    }
     if (l.action === 'form.update' && l.details?.before && f && !f.deleted_at) {
       return (
         <form action={revertForm}>
@@ -102,6 +117,7 @@ export default async function AuditLogPage({ searchParams }) {
     }
     if (l.target_type === 'form' && f && !f.deleted_at) return <Link className="btn small" href={`/dashboard/forms/${l.target_id}`}>Buka</Link>;
     if (l.target_type === 'response' && r && !r.deleted_at && !r.form_deleted_at) return <Link className="btn small" href={`/dashboard/shipments/${l.target_id}`}>Buka</Link>;
+    if (l.target_type === 'kol' && k && !k.deleted_at) return <Link className="btn small" href={`/dashboard/kol/${l.target_id}`}>Buka</Link>;
     return null;
   }
 

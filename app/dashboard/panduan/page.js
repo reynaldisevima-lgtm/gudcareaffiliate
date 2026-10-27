@@ -16,8 +16,11 @@ const SECTIONS = [
   ['bagikan', 'Membagikan form ke affiliate'],
   ['hasil', 'Melihat hasil survey'],
   ['kirim', 'Mengelola pengiriman barang'],
+  ['kol', 'Data KOL'],
+  ['label', 'Mencetak label pengiriman'],
   ['aplikasi', 'Mengatur tampilan aplikasi'],
   ['log', 'Log aktivitas & memulihkan data'],
+  ['workspace', 'Workspace untuk project leader lain'],
   ['faq', 'Tips & pertanyaan umum'],
 ];
 
@@ -51,11 +54,15 @@ export default async function GuidePage() {
           </div>
           <div>
             <dt>Tim brand</dt>
-            <dd>Hanya melihat brand miliknya sendiri: form, jawaban, pengiriman, dan tampilan form brand tersebut. Tidak bisa melihat brand lain.</dd>
+            <dd>Hanya melihat brand miliknya sendiri. Sesuai akses yang kamu atur: <em>Affiliate</em> (form, jawaban, pengiriman affiliate), <em>KOL</em> (data &amp; pengiriman KOL), atau keduanya.</dd>
           </div>
           <div>
             <dt>Affiliate (pengisi form)</dt>
             <dd>Tidak perlu akun. Cukup membuka link form, mengisi, lalu mendapat link untuk melacak kiriman barang.</dd>
+          </div>
+          <div>
+            <dt>KOL (talent)</dt>
+            <dd>Tidak perlu akun. Datanya diisi tim brand di menu KOL, lalu mendapat link lacak untuk setiap kiriman.</dd>
           </div>
         </dl>
       </Section>
@@ -101,6 +108,14 @@ export default async function GuidePage() {
           <li>Klik <B>Buat akun</B>.</li>
           <li>Untuk mengganti password akun brand, isi password baru di sebelah akunnya lalu klik <B>Ganti password</B>. Untuk mencabut akses, klik <B>Hapus</B>.</li>
         </ol>
+        <h3>Mengatur akses: admin Affiliate atau admin KOL</h3>
+        <p>Setiap akun tim brand punya pilihan <B>Akses</B> di daftar <B>Akun login brand</B>. Pilih lalu klik <B>Simpan akses</B>:</p>
+        <ul>
+          <li><B>Affiliate &amp; KOL</B> (bawaan): semua menu brand.</li>
+          <li><B>Affiliate saja</B>: Dashboard, Form, jawaban, laporan, dan pengiriman ke affiliate. Menu KOL tidak tampil.</li>
+          <li><B>KOL saja</B>: data talent KOL dan pengiriman ke KOL. Menu Form dan Dashboard tidak tampil; jawaban form tidak bisa dibuka.</li>
+        </ul>
+        <p>Akun yang bergabung lewat link undangan mendapat akses <em>Affiliate &amp; KOL</em>; ubah setelah mereka muncul di daftar. Setiap perubahan akses tercatat di Log aktivitas.</p>
       </Section>
 
       <Section id="form" title="5. Membuat & mengelola form">
@@ -173,7 +188,40 @@ export default async function GuidePage() {
         </ul>
       </Section>
 
-      <Section id="aplikasi" title="9. Mengatur tampilan aplikasi">
+      <Section id="kol" title="9. Data KOL">
+        <p>Menu <B>KOL</B> menyimpan data talent KOL per brand, terpisah dari form affiliate: nama, no. HP/WhatsApp, alamat pengiriman, satu atau lebih akun sosial media, NPWP, dan rekening bank.</p>
+        <ol>
+          <li>Klik <B>Tambah KOL</B>. Admin memilih brand; tim brand otomatis memakai brand-nya sendiri.</li>
+          <li>Isi identitas dan alamat lengkap (provinsi, kota/kabupaten, alamat, kode pos).</li>
+          <li>Isi akun sosial media; klik <B>+ Tambah akun sosial media</B> untuk akun berikutnya (mis. Instagram dan TikTok).</li>
+          <li>Isi NPWP (15 atau 16 angka) dan rekening bank bila sudah ada, lalu klik <B>Simpan KOL</B>.</li>
+        </ol>
+        <h3>Keamanan NPWP & rekening</h3>
+        <ul>
+          <li>NPWP dan no. rekening tampil tersamar (hanya 4 angka terakhir). Klik <B>Tampilkan</B> untuk melihat lengkap; setiap kali ditampilkan tercatat di Log aktivitas.</li>
+          <li>Hanya admin dan tim brand KOL tersebut (dengan akses KOL) yang bisa membuka data ini.</li>
+          <li>Saat mengubah data, kosongkan kolom NPWP atau no. rekening bila tidak ingin menggantinya.</li>
+        </ul>
+        <h3>Mengirim barang ke KOL</h3>
+        <ol>
+          <li>Di detail KOL, isi barang di bagian <B>Pengiriman ke KOL ini</B> lalu klik <B>Buat pengiriman</B>. Satu KOL bisa dikirimi berkali-kali, mis. per campaign.</li>
+          <li>Update status, kurir, dan resi seperti pengiriman affiliate. Pengiriman KOL juga tampil di menu <B>Pengiriman</B> (filter <B>KOL</B>).</li>
+          <li>Kirim <B>Link lacak untuk KOL</B> lewat WhatsApp. Halaman lacak tidak menampilkan alamat, NPWP, atau rekening.</li>
+        </ol>
+        <p className="note">KOL yang terhapus bisa dipulihkan admin dari <B>Log aktivitas</B> (baris <em>KOL dihapus</em> → <B>Pulihkan</B>).</p>
+      </Section>
+
+      <Section id="label" title="10. Mencetak label pengiriman">
+        <p>Label berisi <strong>pengirim</strong> (nama brand dan no. HP brand) dan <strong>penerima</strong> (nama, no. HP, alamat), plus isi paket dan no. resi bila sudah ada.</p>
+        <ol>
+          <li>Isi <B>No. HP brand</B> di detail brand (menu <B>Brand &amp; akun</B>) agar tampil sebagai pengirim.</li>
+          <li>Di menu <B>Pengiriman</B>, centang penerima (affiliate maupun KOL), lalu klik <B>Cetak label terpilih</B>. Untuk satu penerima, klik <B>Cetak label</B> di halaman detailnya.</li>
+          <li>Pilih ukuran: <B>Thermal 100 × 150 mm</B> untuk printer label, atau <B>A4</B> (4 label per halaman). Klik <B>Cetak</B>.</li>
+        </ol>
+        <p className="note">Alamat affiliate diambil dari pertanyaan bertipe <em>Alamat</em> di form. Untuk form tanpa pertanyaan itu, label tetap tercetak dengan ruang alamat kosong untuk diisi manual.</p>
+      </Section>
+
+      <Section id="aplikasi" title="11. Mengatur tampilan aplikasi">
         <p>Menu <B>Pengaturan aplikasi</B> (khusus admin) mengubah tampilan aplikasi untuk semua pengguna, termasuk tim brand dan halaman form affiliate.</p>
         <ol>
           <li>Ubah <B>Nama aplikasi</B>: tampil di sidebar, halaman login, judul tab browser, dan header form affiliate.</li>
@@ -187,7 +235,7 @@ export default async function GuidePage() {
         <p className="note">Tampilan form affiliate (font, latar, sampul) diatur per brand di <B>Brand &amp; akun</B>, bukan di sini. Di HP yang sudah memasang aplikasi, ikon baru kadang baru terlihat setelah aplikasi dibuka ulang atau dipasang ulang.</p>
       </Section>
 
-      <Section id="log" title="10. Log aktivitas & memulihkan data">
+      <Section id="log" title="12. Log aktivitas & memulihkan data">
         <p>Menu <B>Log aktivitas</B> (khusus admin) mencatat siapa melakukan apa dan kapan: login (termasuk yang gagal), membuat/mengubah/menyalin/menghapus form, menghapus jawaban, perubahan brand, akun, link undangan, pengiriman, dan pengaturan aplikasi.</p>
         <ul>
           <li>Saring dengan jenis aktivitas (<B>Hapus</B>, <B>Buat</B>, <B>Ubah</B>, <B>Pulihkan</B>, <B>Login</B>), brand, atau kata kunci (nama form, email, nama pengguna).</li>
@@ -198,7 +246,17 @@ export default async function GuidePage() {
         </ul>
       </Section>
 
-      <Section id="faq" title="11. Tips & pertanyaan umum">
+      <Section id="workspace" title="13. Workspace untuk project leader lain">
+        <p>Project leader lain bisa memakai aplikasi ini dengan <strong>workspace terpisah</strong>: brand, form, KOL, pengiriman, log, dan pengaturan aplikasi mereka tidak terlihat oleh workspace lain, begitu juga sebaliknya.</p>
+        <ol>
+          <li>Bagikan alamat <B>/daftar</B>, atau minta mereka klik <B>Daftar dan buat workspace sendiri</B> di halaman login.</li>
+          <li>Mereka mengisi nama workspace lalu masuk dengan Google. Akun super admin workspace mereka langsung aktif.</li>
+          <li>Setelah itu mereka menambah brand dan mengundang tim sendiri, sama seperti panduan ini.</li>
+        </ol>
+        <p className="note">Pemilik platform melihat daftar semua workspace di menu <B>Semua workspace</B>.</p>
+      </Section>
+
+      <Section id="faq" title="14. Tips & pertanyaan umum">
         <dl className="faq">
           <div>
             <dt>Tim brand bilang tidak bisa login.</dt>

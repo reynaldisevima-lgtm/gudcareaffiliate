@@ -28,12 +28,13 @@ export default async function ShipmentDetailPage({ params }) {
     : [];
   const status = shipment?.status || 'pending';
   const brand = await db.get('SELECT name FROM brands WHERE id=?', form.brand_id);
-  const others = (await listShipments(user)).filter((r) => r.id !== response.id && samePerson(r, who));
+  const others = (await listShipments(user)).filter((r) => r.key !== `r${response.id}` && samePerson(r, who));
 
   return (
     <>
       <PageHeader title={who.name} subtitle={`${form.title}${who.detail ? ` · ${who.detail}` : ''}`}>
         <Link className="btn" href={`/dashboard/forms/${form.id}/shipments`}>Kembali ke daftar</Link>
+        <a className="btn" href={`/dashboard/shipments/label?id=r${response.id}`} target="_blank" rel="noreferrer">Cetak label</a>
       </PageHeader>
 
       <div className="panel">
@@ -60,7 +61,7 @@ export default async function ShipmentDetailPage({ params }) {
         <div className="panel">
           <h2>Update pengiriman</h2>
           <ShipmentForm
-            responseId={response.id}
+            target={{ name: 'response_id', value: response.id }}
             initial={{ status, items: shipment?.items || '', courier: shipment?.courier || '', tracking_no: shipment?.tracking_no || '' }}
           />
         </div>
@@ -100,11 +101,11 @@ export default async function ShipmentDetailPage({ params }) {
             <thead><tr><th>Form</th><th>Barang</th><th>Status</th><th></th></tr></thead>
             <tbody>
               {others.map((o) => (
-                <tr key={o.id}>
+                <tr key={o.key}>
                   <td>{o.formTitle}<div className="muted">{o.brandName}</div></td>
                   <td>{o.items || <span className="muted">-</span>}</td>
                   <td><StatusTag status={o.status} /></td>
-                  <td><Link className="btn small" href={`/dashboard/shipments/${o.id}`}>Buka</Link></td>
+                  <td><Link className="btn small" href={o.href}>Buka</Link></td>
                 </tr>
               ))}
             </tbody>

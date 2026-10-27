@@ -15,7 +15,7 @@ export default async function FormEditPage({ params }) {
   const form = await getAccessibleForm(user, id);
   if (!form) notFound();
   const brand = await db.get('SELECT name FROM brands WHERE id=?', form.brand_id);
-  const brands = user.role === 'admin' ? (await db.all('SELECT id, name FROM brands ORDER BY name')) : [];
+  const brands = user.role === 'admin' ? (await db.all('SELECT id, name FROM brands WHERE workspace_id=? ORDER BY name', user.workspace_id)) : [];
 
   return (
     <>

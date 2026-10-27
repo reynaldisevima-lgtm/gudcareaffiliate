@@ -4,7 +4,8 @@ import { updateShipment } from '@/app/actions';
 import { STATUSES, COURIERS, FLOW, statusLabel, detectCourier, cleanResi } from '@/lib/shipping';
 import ResiScanner from '@/components/ResiScanner';
 
-export default function ShipmentForm({ responseId, initial }) {
+// target: { name: 'response_id' | 'kol_shipment_id', value } — penerima affiliate atau pengiriman KOL.
+export default function ShipmentForm({ target, initial }) {
   const [state, action, pending] = useActionState(updateShipment, null);
   const [v, setV] = useState(initial);
   const [note, setNote] = useState('');
@@ -26,7 +27,7 @@ export default function ShipmentForm({ responseId, initial }) {
 
   return (
     <form action={action} className="stack">
-      <input type="hidden" name="response_id" value={responseId} />
+      <input type="hidden" name={target.name} value={target.value} />
       <div>
         <label htmlFor="status">Status</label>
         <select id="status" name="status" value={v.status} onChange={(e) => set({ status: e.target.value })}>

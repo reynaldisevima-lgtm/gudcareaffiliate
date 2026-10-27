@@ -14,7 +14,7 @@ export async function GET(req) {
   const params = new URL(req.url).searchParams;
   const size = SIZES.includes(Number(params.get('size'))) ? Number(params.get('size')) : 192;
   const mask = params.get('mask') === '1';
-  const s = await getSettings();
+  const s = await getSettings(params.get('w'));
   if (!s.logo) return Response.redirect(new URL(mask ? s.icons.maskable512 : s.icons.any512, req.url), 307);
 
   const inner = Math.round(size * (mask ? 0.7 : 1));

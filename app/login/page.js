@@ -4,13 +4,13 @@ import { getUser } from '@/lib/auth';
 import { googleEnabled } from '@/lib/google';
 import LoginForm from '@/components/LoginForm';
 import Logo from '@/components/Logo';
-import { getSettings } from '@/lib/settings';
+import { getSettings, PLATFORM_WORKSPACE } from '@/lib/settings';
 import GoogleIcon from '@/components/GoogleIcon';
 
 export const metadata = { title: 'Masuk' };
 
 const errors = (APP) => ({
-  not_registered: `Email Google ini belum terdaftar. Minta link undangan dari tim brand kamu atau admin ${APP}, lalu masuk lewat link itu.`,
+  not_registered: `Email Google ini belum terdaftar. Anggota tim brand: minta link undangan dari admin ${APP}. Project leader: daftar dulu lewat tautan di bawah.`,
   invite_invalid: `Link undangan sudah tidak berlaku. Minta link terbaru dari tim brand kamu atau admin ${APP}.`,
   google_mismatch: `Email ini sudah terhubung ke akun Google lain. Hubungi admin ${APP}.`,
   google_cancel: 'Login Google dibatalkan.',
@@ -23,7 +23,7 @@ export default async function LoginPage({ searchParams }) {
   if (await getUser()) redirect('/dashboard/statistik');
   const { error } = await searchParams;
   const google = googleEnabled();
-  const app = await getSettings();
+  const app = await getSettings(PLATFORM_WORKSPACE);
   const ERRORS = errors(app.app_name);
   const triedEmail = error === 'not_registered' ? (await cookies()).get('login_email')?.value : null;
   return (
@@ -47,6 +47,7 @@ export default async function LoginPage({ searchParams }) {
           </>
         )}
         <LoginForm />
+        <p className="muted" style={{ marginTop: 20 }}>Project leader baru? <a href="/daftar">Daftar dan buat workspace sendiri</a></p>
       </div>
     </div>
   );

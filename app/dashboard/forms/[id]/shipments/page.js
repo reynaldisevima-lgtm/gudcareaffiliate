@@ -22,7 +22,7 @@ export default async function FormShipmentsPage({ params, searchParams }) {
     <>
       <PageHeader title={form.title} subtitle={brand.name} />
       <FormTabs formId={form.id} active="shipments" />
-      <ShipmentsBoard rows={(await listShipments(user, { formId: form.id }))} status={status} q={typeof sp.q === 'string' ? sp.q.slice(0, 100) : ''} />
+      <ShipmentsBoard rows={(await listShipments(user, { formId: form.id }))} showKind={false} status={status} q={typeof sp.q === 'string' ? sp.q.slice(0, 100) : ''} />
     </>
   );
 }
