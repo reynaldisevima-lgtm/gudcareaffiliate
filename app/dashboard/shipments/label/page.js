@@ -4,7 +4,6 @@ import { loadLabels } from '@/lib/labels';
 import { audit } from '@/lib/audit';
 import { formatAddress } from '@/lib/address';
 import PrintButton from '@/components/PrintButton';
-import { Barcode } from '@/lib/barcode';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Cetak label pengiriman' };
@@ -77,14 +76,6 @@ export default async function LabelPage({ searchParams }) {
                 {l.sender.logo ? <img src={l.sender.logo} alt={l.sender.name} className="sl-logo" /> : <strong className="sl-brand">{l.sender.name}</strong>}
                 {l.courier && <strong className="sl-courier">{l.courier}</strong>}
               </header>
-              {l.trackingNo ? (
-                <section className="sl-block sl-code">
-                  <Barcode value={l.trackingNo} className="sl-barcode" />
-                  <div className="sl-resi">{l.trackingNo}</div>
-                </section>
-              ) : (
-                <section className="sl-block sl-code sl-empty">Tempel resi kurir di sini</section>
-              )}
               <section className="sl-block sl-to">
                 <div className="sl-cap">Penerima</div>
                 <div className="sl-name big">{l.recipient.name}</div>

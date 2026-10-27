@@ -212,7 +212,7 @@ export default async function GuidePage() {
       </Section>
 
       <Section id="label" title="10. Mencetak label pengiriman">
-        <p>Label berisi <strong>pengirim</strong> (nama brand dan no. HP brand) dan <strong>penerima</strong> (nama, no. HP, alamat), plus isi paket dan no. resi bila sudah ada.</p>
+        <p>Label berisi <strong>pengirim</strong> (nama brand dan no. HP brand) dan <strong>penerima</strong> (nama, no. HP, alamat), plus isi paket. Label dicetak sebelum paket diserahkan ke jasa pengiriman, jadi tidak memuat no. resi; nama kurir tampil bila sudah diisi.</p>
         <ol>
           <li>Isi <B>No. HP brand</B> di detail brand (menu <B>Brand &amp; akun</B>) agar tampil sebagai pengirim.</li>
           <li>Di menu <B>Pengiriman</B>, centang penerima (affiliate maupun KOL), lalu klik <B>Cetak label terpilih</B>. Untuk satu penerima, klik <B>Cetak label</B> di halaman detailnya.</li>
